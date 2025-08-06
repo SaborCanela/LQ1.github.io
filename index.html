@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Registro de Laboratorio</title>
   <!-- Flatpickr para selector de fechas con rangos y personalización -->
+  <!-- Fuente Inter para un texto más estilizado y delgado -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/rangePlugin.js"></script>
@@ -13,7 +15,9 @@
     body {
       margin: 0;
       padding: 0;
-      font-family: sans-serif;
+      /* Utilizar la fuente Inter importada con un peso ligero para todo el cuerpo */
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
       background-image: url('Fondo_img.jpeg');
       background-size: cover;
       background-position: center;
@@ -38,8 +42,8 @@
       -webkit-backdrop-filter: blur(10px);
     }
     .header img.logo {
-      width: 50px;
-      height: 50px;
+      width: 40px;
+      height: 40px;
       object-fit: contain;
     }
     .header h1 {
@@ -67,8 +71,17 @@
     }
     .form-step { display: none; }
     .form-step.active { display: block; }
-    label { font-weight: bold; }
-    input, select, textarea, button {
+    /* Etiquetas e inputs separados y con tipografía ligera */
+    label {
+      font-weight: 500;
+      margin-top: 0.5rem;
+      margin-bottom: 0.25rem;
+      display: block;
+    }
+    input,
+    select,
+    textarea,
+    button {
       padding: 0.75rem;
       font-size: 1em;
       width: 100%;
@@ -78,6 +91,7 @@
       border-bottom: 1px solid #ccc;
       border-radius: 0;
       color: #333;
+      margin-bottom: 1rem;
     }
     input::placeholder,
     textarea::placeholder {
@@ -137,7 +151,7 @@
   <!-- Encabezado con logo y título -->
   <div class="header">
     <img src="logo.png" alt="Logo del laboratorio" class="logo">
-    <h1>Registro Laboratorio Química 1</h1>
+    <h1>Registro de Laboratorio</h1>
   </div>
   <main class="main">
   <form id="lab-form"
@@ -169,8 +183,11 @@
         <input type="date" id="fechaSolicitudReactivo" name="fechaSolicitudReactivo" required />
 
         <label for="descripcion">Reactivo</label>
+        <!-- Campo de entrada para escritorio -->
         <input list="reactivosList" id="descripcion" name="descripcion" placeholder="Nombre del reactivo solicitado" />
         <datalist id="reactivosList"></datalist>
+        <!-- Lista desplegable para móviles; se carga dinámicamente y se habilita en pantallas pequeñas -->
+        <select id="descripcionSelect" name="descripcion" class="mobile-select" style="display:none;" disabled></select>
 
         <label for="cantidad">Cantidad</label>
         <input type="number" id="cantidad" name="cantidad" min="0" step="0.01" placeholder="Cantidad solicitada" />
@@ -194,8 +211,11 @@
         <input type="date" id="fechaSolicitudInsumo" name="fechaSolicitudInsumo" required />
 
         <label for="insumo">Insumo</label>
+        <!-- Campo de entrada para escritorio -->
         <input list="insumosList" id="insumo" name="insumo" placeholder="Nombre del insumo" />
         <datalist id="insumosList"></datalist>
+        <!-- Lista desplegable para móviles; se carga dinámicamente y se habilita en pantallas pequeñas -->
+        <select id="insumoSelect" name="insumo" class="mobile-select" style="display:none;" disabled></select>
 
         <label for="fechaDevolucion">Fecha de devolución</label>
         <input type="date" id="fechaDevolucion" name="fechaDevolucion" required />
@@ -203,8 +223,11 @@
 
       <div class="field-group group-equipos">
         <label for="equipo">Equipo</label>
+        <!-- Campo de entrada para escritorio -->
         <input list="equiposList" id="equipo" name="equipo" placeholder="Selecciona un equipo" />
         <datalist id="equiposList"></datalist>
+        <!-- Lista desplegable para móviles; se carga dinámicamente y se habilita en pantallas pequeñas -->
+        <select id="equipoSelect" name="equipo" class="mobile-select" style="display:none;" disabled></select>
 
         <label for="fechaInicialEquipo">Fecha inicial</label>
         <input type="text" id="fechaInicialEquipo" name="fechaInicialEquipo" readonly placeholder="Rango inicial" />
@@ -348,12 +371,76 @@
       const items = await resp.json();
       const dl = document.getElementById(listId);
       dl.innerHTML = items.map(i => `<option value="${i}"></option>`).join('');
+      // También llenar la lista desplegable asociada (para dispositivos móviles)
+      const selectMapping = {
+        reactivosList: 'descripcionSelect',
+        insumosList: 'insumoSelect',
+        equiposList: 'equipoSelect'
+      };
+      const selectId = selectMapping[listId];
+      if (selectId) {
+        const sel = document.getElementById(selectId);
+        if (sel) {
+          sel.innerHTML = items.map(i => `<option value="${i}">${i}</option>`).join('');
+        }
+      }
     }
     window.addEventListener('load', () => {
       loadList('listReactivos', 'reactivosList');
       loadList('listInsumos', 'insumosList');
       loadList('listEquipos', 'equiposList');
+      // Configurar modos de entrada según el tamaño de la pantalla al cargar
+      toggleInputModes();
     });
+
+    // Ajustar visibilidad de los inputs (datalist) y selects según el ancho de pantalla
+    function toggleInputModes() {
+      const isMobile = window.matchMedia('(max-width: 600px)').matches;
+      // Reactivos
+      const inputReactivo  = document.getElementById('descripcion');
+      const selectReactivo = document.getElementById('descripcionSelect');
+      if (isMobile) {
+        selectReactivo.style.display = '';
+        selectReactivo.disabled = false;
+        inputReactivo.style.display = 'none';
+        inputReactivo.disabled = true;
+      } else {
+        selectReactivo.style.display = 'none';
+        selectReactivo.disabled = true;
+        inputReactivo.style.display = '';
+        inputReactivo.disabled = false;
+      }
+      // Insumos
+      const inputInsumo  = document.getElementById('insumo');
+      const selectInsumo = document.getElementById('insumoSelect');
+      if (isMobile) {
+        selectInsumo.style.display = '';
+        selectInsumo.disabled = false;
+        inputInsumo.style.display = 'none';
+        inputInsumo.disabled = true;
+      } else {
+        selectInsumo.style.display = 'none';
+        selectInsumo.disabled = true;
+        inputInsumo.style.display = '';
+        inputInsumo.disabled = false;
+      }
+      // Equipos
+      const inputEquipo  = document.getElementById('equipo');
+      const selectEquipo = document.getElementById('equipoSelect');
+      if (isMobile) {
+        selectEquipo.style.display = '';
+        selectEquipo.disabled = false;
+        inputEquipo.style.display = 'none';
+        inputEquipo.disabled = true;
+      } else {
+        selectEquipo.style.display = 'none';
+        selectEquipo.disabled = true;
+        inputEquipo.style.display = '';
+        inputEquipo.disabled = false;
+      }
+    }
+    // Reajustar en cambios de tamaño de ventana
+    window.addEventListener('resize', toggleInputModes);
     document.getElementById('descripcion').addEventListener('input', e => {
       const q = e.target.value.trim();
       loadList('listReactivos', 'reactivosList', { q });
@@ -362,11 +449,24 @@
       const q = e.target.value.trim();
       loadList('listInsumos', 'insumosList', { q });
     });
+
+    // Listeners para selects en modo móvil: actualizar sugerencias y listas
+    document.getElementById('descripcionSelect').addEventListener('change', e => {
+      const q = e.target.value.trim();
+      loadList('listReactivos', 'reactivosList', { q });
+    });
+    document.getElementById('insumoSelect').addEventListener('change', e => {
+      const q = e.target.value.trim();
+      loadList('listInsumos', 'insumosList', { q });
+    });
     function refreshEquiposList() {
       const start = document.getElementById('fechaInicialEquipo').value;
       const end   = document.getElementById('fechaFinalEquipo').value;
-      const q     = document.getElementById('equipo').value.trim();
-      // Si no hay texto suficiente en el campo de búsqueda, cargar lista completa para reducir llamadas
+      // Determinar si se debe leer el valor del input o del select según el modo de pantalla
+      const isMobile = window.matchMedia('(max-width: 600px)').matches;
+      const equipoField = isMobile ? document.getElementById('equipoSelect') : document.getElementById('equipo');
+      const q = equipoField.value.trim();
+      // Si no hay texto suficiente, cargar lista completa para reducir llamadas
       if (!q || q.length < 2) {
         loadList('listEquipos', 'equiposList');
         return;
@@ -378,6 +478,11 @@
       }
     }
     document.getElementById('equipo').addEventListener('input', () => refreshEquiposList());
+    // Cuando la opción en el select móvil de equipos cambie, actualizar lista de equipos y fechas ocupadas
+    document.getElementById('equipoSelect').addEventListener('change', e => {
+      refreshEquiposList();
+      fetchBusyEquipos(e.target.value.trim());
+    });
     // Fechas ocupadas para equipos y flatpickr
     // Almacena en caché las fechas ocupadas por equipo para evitar solicitudes repetidas
     const busyEquipCache = {};
