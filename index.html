@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registro de Laboratorio</title>
+  <!-- Flatpickr para selector de fechas con rangos y personalización -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/rangePlugin.js"></script>
+  <style>
+    /* Fondo con imagen de laboratorio y capa blanqueada */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      background-image: url('Fondo_img.jpeg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-color: rgba(255, 255, 255, 0.7);
+      background-blend-mode: lighten;
+      min-height: 100vh;
+      position: relative;
+    }
+    /* Encabezado con logo y título en la esquina superior izquierda */
+    .header {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 0.5rem;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .header img.logo {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 1.2rem;
+      color: #333;
+    }
+    /* Área principal centrada vertical y horizontalmente */
+    .main {
+      min-height: calc(100vh - 8rem);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 4rem;
+      padding-bottom: 4rem;
+    }
+    /* Contenedor del formulario centrado y con transparencia */
+    #lab-form {
+      max-width: 600px;
+      width: 90%;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 1rem;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .form-step { display: none; }
+    .form-step.active { display: block; }
+    label { font-weight: bold; }
+    input, select, textarea, button {
+      padding: 0.75rem;
+      font-size: 1em;
+      width: 100%;
+      box-sizing: border-box;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid #ccc;
+      border-radius: 0;
+      color: #333;
+    }
+    input::placeholder,
+    textarea::placeholder {
+      color: #666;
+      opacity: 1;
+    }
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-bottom: 2px solid #007bff;
+    }
+    button {
+      cursor: pointer;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 10px;
+      transition: background-color 0.3s;
+    }
+    button:hover { background-color: #0056b3; }
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+    }
+    /* Resalta las fechas deshabilitadas en rojo dentro de flatpickr */
+    .flatpickr-day.flatpickr-disabled,
+    .flatpickr-day.flatpickr-disabled:hover {
+      background-color: #f8d7da !important;
+      border-color: #f5c6cb !important;
+      color: #721c24 !important;
+    }
+    #ocupacionEquipos {
+      margin-top: 5px;
+      font-size: 0.9em;
+      color: #333;
+    }
+
+    /* Pie de página con información de contacto */
+    .footer {
+      width: 100%;
+      text-align: center;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      font-size: 0.9rem;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Encabezado con logo y título -->
+  <div class="header">
+    <img src="logo.png" alt="Logo del laboratorio" class="logo">
+    <h1>Registro Laboratorio Química 1</h1>
+  </div>
+  <main class="main">
+  <form id="lab-form"
+        method="post"
+        action="https://script.google.com/macros/s/AKfycbxWhkn_HLyogNUYfzoZlypV6BxK4TXt4Gyi8--fLwJRXWKskePsWrLwOeaBXK4El3mhag/exec">
+    <!-- Paso 1: Tipo de acción -->
+    <div class="form-step" id="step-1">
+      <label for="tipo">Tipo de acción</label>
+      <select id="tipo" name="tipo" required>
+        <option value="">– selecciona –</option>
+        <option value="pasantia">Horas de Pasantía</option>
+        <option value="reactivos">Solicitud de Reactivos</option>
+        <option value="insumos">Solicitud de Insumos</option>
+        <option value="equipos">Solicitud de Equipos</option>
+        <option value="almacenamiento">Solicitud de Almacenamiento</option>
+        <option value="usolab">Uso de Laboratorio</option>
+      </select>
+      <div class="actions">
+        <div></div>
+        <button type="button" id="next-1">Siguiente</button>
+      </div>
+    </div>
+    <!-- Paso 2: Campos específicos según tipo -->
+    <div class="form-step" id="step-2">
+      <!-- Grupos dinámicos -->
+      <div class="field-group group-reactivos">
+        <!-- Fecha primero para reactivos -->
+        <label for="fechaSolicitudReactivo">Fecha de solicitud del reactivo</label>
+        <input type="date" id="fechaSolicitudReactivo" name="fechaSolicitudReactivo" required />
+
+        <label for="descripcion">Reactivo</label>
+        <input list="reactivosList" id="descripcion" name="descripcion" placeholder="Nombre del reactivo solicitado" />
+        <datalist id="reactivosList"></datalist>
+
+        <label for="cantidad">Cantidad</label>
+        <input type="number" id="cantidad" name="cantidad" min="0" step="0.01" placeholder="Cantidad solicitada" />
+
+        <label for="unidad">Unidades</label>
+        <input type="text" id="unidad" name="unidad" placeholder="mL, g, unidades, etc." />
+      </div>
+
+      <div class="field-group group-pasantia">
+        <!-- Reordenado: primero la fecha de pasantía -->
+        <label for="fechaPasantia">Fecha de la pasantía</label>
+        <input type="date" id="fechaPasantia" name="fechaPasantia" required />
+
+        <label for="horas">Horas (pasantía)</label>
+        <input type="number" id="horas" name="horas" min="0" placeholder="Número de horas" />
+      </div>
+
+      <div class="field-group group-insumos">
+        <!-- Primero la fecha de solicitud de insumo -->
+        <label for="fechaSolicitudInsumo">Fecha de solicitud de insumo</label>
+        <input type="date" id="fechaSolicitudInsumo" name="fechaSolicitudInsumo" required />
+
+        <label for="insumo">Insumo</label>
+        <input list="insumosList" id="insumo" name="insumo" placeholder="Nombre del insumo" />
+        <datalist id="insumosList"></datalist>
+
+        <label for="fechaDevolucion">Fecha de devolución</label>
+        <input type="date" id="fechaDevolucion" name="fechaDevolucion" required />
+      </div>
+
+      <div class="field-group group-equipos">
+        <label for="equipo">Equipo</label>
+        <input list="equiposList" id="equipo" name="equipo" placeholder="Selecciona un equipo" />
+        <datalist id="equiposList"></datalist>
+
+        <label for="fechaInicialEquipo">Fecha inicial</label>
+        <input type="text" id="fechaInicialEquipo" name="fechaInicialEquipo" readonly placeholder="Rango inicial" />
+
+        <label for="fechaFinalEquipo">Fecha final</label>
+        <input type="text" id="fechaFinalEquipo" name="fechaFinalEquipo" readonly placeholder="Rango final" />
+
+        <div id="ocupacionEquipos"></div>
+      </div>
+
+      <div class="field-group group-almacenamiento">
+        <label for="descripcionAlmacen">Descripción (Muestra o Reactivo)</label>
+        <input type="text" id="descripcionAlmacen" name="descripcionAlmacen" placeholder="Descripción de la muestra o reactivo" />
+
+        <label for="fechaInicial">Fecha inicial</label>
+        <input type="date" id="fechaInicial" name="fechaInicial" />
+
+        <label for="fechaFinal">Fecha final</label>
+        <input type="date" id="fechaFinal" name="fechaFinal" />
+      </div>
+
+      <div class="field-group group-usolab">
+        <!-- Primero la fecha de uso del laboratorio -->
+        <label for="fechaUsoLab">Fecha del uso de laboratorio</label>
+        <input type="date" id="fechaUsoLab" name="fechaUsoLab" required />
+
+        <label for="actividadRealizada">Actividad realizada</label>
+        <input type="text" id="actividadRealizada" name="actividadRealizada" placeholder="Describe la actividad realizada" />
+
+        <label for="tipoUsuario">Tipo de usuario</label>
+        <select id="tipoUsuario" name="tipoUsuario">
+          <option value="">– selecciona –</option>
+          <option value="Estudiante">Estudiante</option>
+          <option value="Investigador">Investigador</option>
+        </select>
+      </div>
+      <div class="actions">
+        <button type="button" id="prev-2">Anterior</button>
+        <button type="button" id="next-2">Siguiente</button>
+      </div>
+    </div>
+    <!-- Paso 3: Campos generales -->
+    <div class="form-step" id="step-3">
+      <label for="correo">Correo institucional</label>
+      <input type="email" id="correo" name="correo" placeholder="usuario@ikiam.edu.ec" required />
+
+      <label for="nombre">Nombre</label>
+      <input type="text" id="nombre" name="nombre" required placeholder="Nombre completo" />
+
+      <!-- Tipo de actividad se mueve aquí y se añade nombre -->
+      <label for="tipoActividad">Tipo de actividad</label>
+      <select id="tipoActividad" name="tipoActividad">
+        <option value="">– selecciona –</option>
+        <option value="Tesis">Tesis</option>
+        <option value="Proyecto">Proyecto</option>
+        <option value="Práctica de laboratorio">Práctica de laboratorio</option>
+      </select>
+
+      <label for="nombreActividad">Nombre del tipo de actividad</label>
+      <input type="text" id="nombreActividad" name="nombreActividad" placeholder="Nombre de la actividad" />
+
+      <label for="observaciones">Observaciones</label>
+      <textarea id="observaciones" name="observaciones" rows="3" placeholder="Escribe aquí cualquier observación adicional"></textarea>
+      <div class="actions">
+        <button type="button" id="prev-3">Anterior</button>
+        <button type="submit">Enviar</button>
+      </div>
+    </div>
+  </form>
+  </main>
+  <footer class="footer">
+    <p><strong>Contacto:</strong> laboratorio@universidad.edu.ec</p>
+    <p><strong>Teléfono:</strong> +593 0000 000000</p>
+    <p><strong>Ubicación:</strong> Laboratorio Central de la Universidad - Tena, Ecuador</p>
+  </footer>
+  <script>
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxWhkn_HLyogNUYfzoZlypV6BxK4TXt4Gyi8--fLwJRXWKskePsWrLwOeaBXK4El3mhag/exec';
+    // Manejo de pasos
+    const steps = Array.from(document.querySelectorAll('.form-step'));
+    let currentStep = 0;
+    function showStep(index) {
+      steps.forEach((s, i) => s.classList.toggle('active', i === index));
+      currentStep = index;
+    }
+    showStep(0);
+    // Referencias a select y grupos
+    const tipoSelect = document.getElementById('tipo');
+    const groups = document.querySelectorAll('.field-group');
+    function toggleGroups() {
+      groups.forEach(g => {
+        g.style.display = 'none';
+        g.querySelectorAll('input, select, textarea').forEach(f => f.required = false);
+      });
+      const mapping = {
+        pasantia: '.group-pasantia',
+        reactivos: '.group-reactivos',
+        insumos: '.group-insumos',
+        equipos: '.group-equipos',
+        almacenamiento: '.group-almacenamiento',
+        usolab: '.group-usolab'
+      };
+      const selector = mapping[tipoSelect.value];
+      if (!selector) return;
+      const active = document.querySelector(selector);
+      active.style.display = 'block';
+      // Marcar obligatorios solo para los campos visibles (excepto unidades y observaciones que pueden ser opcionales)
+      active.querySelectorAll('input[required], select[required]').forEach(f => f.required = true);
+      if (tipoSelect.value === 'equipos') {
+        refreshEquiposList();
+        fetchBusyEquipos(document.getElementById('equipo').value.trim());
+      }
+    }
+    tipoSelect.addEventListener('change', toggleGroups);
+    // Navegación pasos
+    document.getElementById('next-1').addEventListener('click', () => {
+      if (!tipoSelect.value) {
+        alert('Por favor, seleccione un tipo de acción.');
+        return;
+      }
+      toggleGroups();
+      showStep(1);
+    });
+    document.getElementById('prev-2').addEventListener('click', () => showStep(0));
+    document.getElementById('next-2').addEventListener('click', () => {
+      // Validar campos visibles en el paso 2 antes de pasar al paso 3
+      const visibleGroup = Array.from(groups).find(g => g.style.display === 'block');
+      const invalid = Array.from(visibleGroup.querySelectorAll('[required]')).some(f => !f.value);
+      if (invalid) {
+        alert('Por favor, complete todos los campos requeridos.');
+        return;
+      }
+      showStep(2);
+    });
+    document.getElementById('prev-3').addEventListener('click', () => showStep(1));
+    // Cargar listas
+    async function loadList(action, listId, params = {}) {
+      const url = new URL(WEB_APP_URL);
+      url.searchParams.set('action', action);
+      Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+      const resp = await fetch(url);
+      const items = await resp.json();
+      const dl = document.getElementById(listId);
+      dl.innerHTML = items.map(i => `<option value="${i}"></option>`).join('');
+    }
+    window.addEventListener('load', () => {
+      loadList('listReactivos', 'reactivosList');
+      loadList('listInsumos', 'insumosList');
+      loadList('listEquipos', 'equiposList');
+    });
+    document.getElementById('descripcion').addEventListener('input', e => {
+      const q = e.target.value.trim();
+      loadList('listReactivos', 'reactivosList', { q });
+    });
+    document.getElementById('insumo').addEventListener('input', e => {
+      const q = e.target.value.trim();
+      loadList('listInsumos', 'insumosList', { q });
+    });
+    function refreshEquiposList() {
+      const start = document.getElementById('fechaInicialEquipo').value;
+      const end   = document.getElementById('fechaFinalEquipo').value;
+      const q     = document.getElementById('equipo').value.trim();
+      // Si no hay texto suficiente en el campo de búsqueda, cargar lista completa para reducir llamadas
+      if (!q || q.length < 2) {
+        loadList('listEquipos', 'equiposList');
+        return;
+      }
+      if (start && end) {
+        loadList('availEquipos', 'equiposList', { start, end, q });
+      } else {
+        loadList('listEquipos', 'equiposList', { q });
+      }
+    }
+    document.getElementById('equipo').addEventListener('input', () => refreshEquiposList());
+    // Fechas ocupadas para equipos y flatpickr
+    // Almacena en caché las fechas ocupadas por equipo para evitar solicitudes repetidas
+    const busyEquipCache = {};
+    async function fetchBusyEquipos(equipo) {
+      const container = document.getElementById('ocupacionEquipos');
+      if (!equipo) {
+        container.textContent = '';
+        setupDatepickers([]);
+        return;
+      }
+      // Si ya tenemos en caché el equipo seleccionado, usarlo directamente
+      if (busyEquipCache[equipo]) {
+        setupDatepickers(busyEquipCache[equipo]);
+        return;
+      }
+      container.textContent = 'Cargando disponibilidad...';
+      try {
+        const url = new URL(WEB_APP_URL);
+        url.searchParams.set('action', 'busyEquipos');
+        url.searchParams.set('equipo', equipo);
+        const resp = await fetch(url);
+        const bookings = await resp.json();
+        if (!Array.isArray(bookings) || bookings.length === 0) {
+          container.textContent = '';
+          setupDatepickers([]);
+          busyEquipCache[equipo] = [];
+          return;
+        }
+        const ranges = bookings.map(b => ({ from: b.from, to: b.to }));
+        busyEquipCache[equipo] = ranges;
+        container.textContent = '';
+        setupDatepickers(ranges);
+      } catch (err) {
+        container.textContent = 'No se pudo cargar la disponibilidad.';
+        setupDatepickers([]);
+      }
+    }
+    document.getElementById('equipo').addEventListener('change', e => {
+      fetchBusyEquipos(e.target.value.trim());
+    });
+    let fpInstance = null;
+    function setupDatepickers(disabledRanges) {
+      if (fpInstance) { fpInstance.destroy(); }
+      const disabled = disabledRanges.map(r => ({ from: r.from, to: r.to }));
+      fpInstance = flatpickr(document.getElementById('fechaInicialEquipo'), {
+        mode: 'range',
+        dateFormat: 'Y-m-d',
+        locale: 'es',
+        plugins: [new rangePlugin({ input: '#fechaFinalEquipo' })],
+        disable: disabled,
+        onChange: () => refreshEquiposList()
+      });
+    }
+    // Inicializar datepickers vacío
+    setupDatepickers([]);
+    // Envío del formulario
+    document.getElementById('lab-form').addEventListener('submit', async event => {
+      event.preventDefault();
+      const form = event.target;
+      const formData = new FormData(form);
+      try {
+        const resp = await fetch(form.action, { method: 'POST', body: formData });
+        const text = await resp.text();
+        alert(text);
+        form.reset();
+        showStep(0);
+        setupDatepickers([]);
+      } catch (err) {
+        alert('Ocurrió un error al enviar el formulario.');
+      }
+    });
+  </script>
+</body>
+</html>
