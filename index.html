@@ -2,18 +2,23 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Registro de Laboratorio</title>
-  <!-- Flatpickr para selector de fechas con rangos y personalización -->
+  <!-- Importamos la fuente Inter para un diseño ligero y moderno -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <!-- Librerías de Flatpickr para control de fechas y rangos de fechas -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/rangePlugin.js"></script>
   <style>
-    /* Fondo con imagen de laboratorio y capa blanqueada */
+    /* Configuración global de la página */
+    * {
+      box-sizing: border-box;
+    }
     body {
       margin: 0;
       padding: 0;
-      font-family: sans-serif;
+      font-family: 'Inter', sans-serif;
       background-image: url('Fondo_img.jpeg');
       background-size: cover;
       background-position: center;
@@ -23,7 +28,7 @@
       min-height: 100vh;
       position: relative;
     }
-    /* Encabezado con logo y título en la esquina superior izquierda */
+    /* Encabezado con logo y título */
     .header {
       position: absolute;
       top: 1rem;
@@ -38,8 +43,8 @@
       -webkit-backdrop-filter: blur(10px);
     }
     .header img.logo {
-      width: 50px;
-      height: 50px;
+      width: 40px;
+      height: 40px;
       object-fit: contain;
     }
     .header h1 {
@@ -47,42 +52,82 @@
       font-size: 1.2rem;
       color: #333;
     }
-    /* Área principal centrada vertical y horizontalmente */
-    .main {
+    /* Área principal centrada */
+    main {
       min-height: calc(100vh - 8rem);
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       padding-top: 4rem;
       padding-bottom: 4rem;
     }
-    /* Contenedor del formulario centrado y con transparencia */
-    #lab-form {
-      max-width: 600px;
+    /* Contenedor para el menú de inicio */
+    #menu {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      align-items: center;
+      justify-content: center;
       width: 90%;
+      max-width: 600px;
       padding: 2rem;
       background: rgba(255, 255, 255, 0.9);
       border-radius: 1rem;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
-    .form-step { display: none; }
-    .form-step.active { display: block; }
-    label { font-weight: bold; }
-    input, select, textarea, button {
+    #menu button {
+      width: 100%;
+      padding: 1rem;
+      font-size: 1.1rem;
+      font-weight: 500;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    #menu button:hover {
+      background-color: #0056b3;
+    }
+    /* Estilo general para los formularios */
+    form {
+      width: 90%;
+      max-width: 600px;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 1rem;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      display: none;
+    }
+    form.active {
+      display: block;
+    }
+    .form-step {
+      display: none;
+    }
+    .form-step.active {
+      display: block;
+    }
+    label {
+      font-weight: 500;
+      margin-top: 0.5rem;
+      margin-bottom: 0.25rem;
+      display: block;
+    }
+    input,
+    select,
+    textarea {
+      width: 100%;
       padding: 0.75rem;
       font-size: 1em;
-      width: 100%;
-      box-sizing: border-box;
-      background: transparent;
       border: none;
       border-bottom: 1px solid #ccc;
-      border-radius: 0;
+      background: transparent;
+      margin-bottom: 1rem;
       color: #333;
-    }
-    input::placeholder,
-    textarea::placeholder {
-      color: #666;
-      opacity: 1;
     }
     input:focus,
     select:focus,
@@ -90,365 +135,837 @@
       outline: none;
       border-bottom: 2px solid #007bff;
     }
-    button {
+    button.form-nav {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 0.5rem;
       cursor: pointer;
       background-color: #007bff;
       color: #fff;
-      border: none;
-      border-radius: 4px;
-      padding: 10px;
-      transition: background-color 0.3s;
+      transition: background-color 0.3s ease;
     }
-    button:hover { background-color: #0056b3; }
+    button.form-nav:hover {
+      background-color: #0056b3;
+    }
     .actions {
       display: flex;
       justify-content: space-between;
-      margin-top: 15px;
+      margin-top: 1rem;
     }
-    /* Resalta las fechas deshabilitadas en rojo dentro de flatpickr */
-    .flatpickr-day.flatpickr-disabled,
-    .flatpickr-day.flatpickr-disabled:hover {
-      background-color: #f8d7da !important;
-      border-color: #f5c6cb !important;
-      color: #721c24 !important;
+    .mobile-select {
+      display: none;
     }
-    #ocupacionEquipos {
-      margin-top: 5px;
-      font-size: 0.9em;
-      color: #333;
+    /* Ocultar elementos con la clase hidden */
+    .hidden {
+      display: none !important;
     }
-
-    /* Pie de página con información de contacto */
-    .footer {
+    /* Pie de página */
+    footer {
       width: 100%;
       text-align: center;
       padding: 1rem;
       background: rgba(255, 255, 255, 0.5);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
+      /* Se posiciona de manera estática para evitar solaparse con los formularios */
+      position: static;
+      margin-top: 2rem;
       font-size: 0.9rem;
-      position: absolute;
-      bottom: 0;
-      left: 0;
     }
   </style>
 </head>
 <body>
-  <!-- Encabezado con logo y título -->
   <div class="header">
     <img src="logo.png" alt="Logo del laboratorio" class="logo">
-    <h1>Registro Laboratorio Química 1</h1>
+    <h1>Registro de Laboratorio</h1>
   </div>
-  <main class="main">
-  <form id="lab-form"
-        method="post"
-        action="https://script.google.com/macros/s/AKfycbxWhkn_HLyogNUYfzoZlypV6BxK4TXt4Gyi8--fLwJRXWKskePsWrLwOeaBXK4El3mhag/exec">
-    <!-- Paso 1: Tipo de acción -->
-    <div class="form-step" id="step-1">
-      <label for="tipo">Tipo de acción</label>
-      <select id="tipo" name="tipo" required>
-        <option value="">– selecciona –</option>
-        <option value="pasantia">Horas de Pasantía</option>
-        <option value="reactivos">Solicitud de Reactivos</option>
-        <option value="insumos">Solicitud de Insumos</option>
-        <option value="equipos">Solicitud de Equipos</option>
-        <option value="almacenamiento">Solicitud de Almacenamiento</option>
-        <option value="usolab">Uso de Laboratorio</option>
-      </select>
-      <div class="actions">
-        <div></div>
-        <button type="button" id="next-1">Siguiente</button>
-      </div>
+  <main>
+    <!-- Menú inicial con tres botones principales -->
+    <div id="menu">
+      <button id="btn-external">Solicitudes externas</button>
+      <button id="btn-internal">Uso interno de reactivos/insumos/equipos</button>
+      <button id="btn-lab">Registro de uso interno de laboratorio</button>
     </div>
-    <!-- Paso 2: Campos específicos según tipo -->
-    <div class="form-step" id="step-2">
-      <!-- Grupos dinámicos -->
-      <div class="field-group group-reactivos">
-        <!-- Fecha primero para reactivos -->
-        <label for="fechaSolicitudReactivo">Fecha de solicitud del reactivo</label>
-        <input type="date" id="fechaSolicitudReactivo" name="fechaSolicitudReactivo" required />
 
-        <label for="descripcion">Reactivo</label>
-        <input list="reactivosList" id="descripcion" name="descripcion" placeholder="Nombre del reactivo solicitado" />
-        <datalist id="reactivosList"></datalist>
-
-        <label for="cantidad">Cantidad</label>
-        <input type="number" id="cantidad" name="cantidad" min="0" step="0.01" placeholder="Cantidad solicitada" />
-
-        <label for="unidad">Unidades</label>
-        <input type="text" id="unidad" name="unidad" placeholder="mL, g, unidades, etc." />
-      </div>
-
-      <div class="field-group group-pasantia">
-        <!-- Reordenado: primero la fecha de pasantía -->
-        <label for="fechaPasantia">Fecha de la pasantía</label>
-        <input type="date" id="fechaPasantia" name="fechaPasantia" required />
-
-        <label for="horas">Horas (pasantía)</label>
-        <input type="number" id="horas" name="horas" min="0" placeholder="Número de horas" />
-      </div>
-
-      <div class="field-group group-insumos">
-        <!-- Primero la fecha de solicitud de insumo -->
-        <label for="fechaSolicitudInsumo">Fecha de solicitud de insumo</label>
-        <input type="date" id="fechaSolicitudInsumo" name="fechaSolicitudInsumo" required />
-
-        <label for="insumo">Insumo</label>
-        <input list="insumosList" id="insumo" name="insumo" placeholder="Nombre del insumo" />
-        <datalist id="insumosList"></datalist>
-
-        <label for="fechaDevolucion">Fecha de devolución</label>
-        <input type="date" id="fechaDevolucion" name="fechaDevolucion" required />
-      </div>
-
-      <div class="field-group group-equipos">
-        <label for="equipo">Equipo</label>
-        <input list="equiposList" id="equipo" name="equipo" placeholder="Selecciona un equipo" />
-        <datalist id="equiposList"></datalist>
-
-        <label for="fechaInicialEquipo">Fecha inicial</label>
-        <input type="text" id="fechaInicialEquipo" name="fechaInicialEquipo" readonly placeholder="Rango inicial" />
-
-        <label for="fechaFinalEquipo">Fecha final</label>
-        <input type="text" id="fechaFinalEquipo" name="fechaFinalEquipo" readonly placeholder="Rango final" />
-
-        <div id="ocupacionEquipos"></div>
-      </div>
-
-      <div class="field-group group-almacenamiento">
-        <label for="descripcionAlmacen">Descripción (Muestra o Reactivo)</label>
-        <input type="text" id="descripcionAlmacen" name="descripcionAlmacen" placeholder="Descripción de la muestra o reactivo" />
-
-        <label for="fechaInicial">Fecha inicial</label>
-        <input type="date" id="fechaInicial" name="fechaInicial" />
-
-        <label for="fechaFinal">Fecha final</label>
-        <input type="date" id="fechaFinal" name="fechaFinal" />
-      </div>
-
-      <div class="field-group group-usolab">
-        <!-- Primero la fecha de uso del laboratorio -->
-        <label for="fechaUsoLab">Fecha del uso de laboratorio</label>
-        <input type="date" id="fechaUsoLab" name="fechaUsoLab" required />
-
-        <label for="actividadRealizada">Actividad realizada</label>
-        <input type="text" id="actividadRealizada" name="actividadRealizada" placeholder="Describe la actividad realizada" />
-
-        <label for="tipoUsuario">Tipo de usuario</label>
-        <select id="tipoUsuario" name="tipoUsuario">
+    <!-- Formulario para solicitudes externas -->
+    <form id="external-form">
+      <!-- Paso 1: Selección del tipo de solicitud -->
+      <div class="form-step" id="ext-step-1">
+        <label for="ext_tipo">Tipo de solicitud</label>
+        <select id="ext_tipo" name="ext_tipo" required>
           <option value="">– selecciona –</option>
-          <option value="Estudiante">Estudiante</option>
-          <option value="Investigador">Investigador</option>
+          <option value="Solicitud de Reactivos">Solicitud de Reactivos</option>
+          <option value="Solicitud de Insumos">Solicitud de Insumos</option>
+          <option value="Solicitud de Equipos">Solicitud de Equipos</option>
+          <option value="Solicitud de Almacenamiento">Solicitud de Almacenamiento</option>
         </select>
+        <div class="actions">
+          <button type="button" class="form-nav" id="ext-back-menu">Volver</button>
+          <button type="button" class="form-nav" id="ext-next-1">Siguiente</button>
+        </div>
       </div>
-      <div class="actions">
-        <button type="button" id="prev-2">Anterior</button>
-        <button type="button" id="next-2">Siguiente</button>
+      <!-- Paso 2: Campos específicos según el tipo -->
+      <div class="form-step" id="ext-step-2">
+        <!-- Grupo para Solicitud de Reactivos -->
+        <div class="field-group ext-group" id="ext-group-reactivos">
+          <label for="ext_fechaSolicitudReactivo">Fecha de solicitud de reactivo</label>
+          <input type="date" id="ext_fechaSolicitudReactivo" name="fechaSolicitudReactivo" />
+
+          <label for="ext_reactivo">Reactivo</label>
+          <input list="reactivosList" id="ext_reactivo" name="reactivo" placeholder="Nombre del reactivo" />
+          <datalist id="reactivosList"></datalist>
+          <select id="ext_reactivoSelect" name="reactivo" class="mobile-select" style="display:none;" disabled></select>
+
+          <label for="ext_cantidad">Cantidad</label>
+          <input type="number" id="ext_cantidad" name="cantidad" min="0" step="0.01" placeholder="Cantidad" />
+
+          <label for="ext_unidad">Unidad</label>
+          <input type="text" id="ext_unidad" name="unidad" placeholder="mL, g, unidades, etc." />
+
+          <label for="ext_laboratorioDestino">Laboratorio destino</label>
+          <input type="text" id="ext_laboratorioDestino" name="laboratorioDestino" placeholder="Laboratorio" />
+
+          <label for="ext_tipoActividad">Tipo de actividad</label>
+          <select id="ext_tipoActividad" name="tipoActividad">
+            <option value="">– selecciona –</option>
+            <option value="Tesis">Tesis</option>
+            <option value="Proyecto">Proyecto</option>
+            <option value="Práctica de laboratorio">Práctica de laboratorio</option>
+          </select>
+
+          <!-- Campo adicional para capturar el nombre del proyecto/tesis/práctica -->
+          <div id="ext_actividadDetalle" class="hidden">
+            <label for="ext_nombreActividad">Nombre del proyecto/tesis/práctica</label>
+            <input type="text" id="ext_nombreActividad" name="nombreProyecto" placeholder="Introduce el nombre" />
+          </div>
+        </div>
+        <!-- Grupo para Solicitud de Insumos -->
+        <div class="field-group ext-group" id="ext-group-insumos">
+          <label for="ext_fechaSolicitudInsumos">Fecha de solicitud de insumos</label>
+          <input type="date" id="ext_fechaSolicitudInsumos" name="fechaSolicitudInsumos" />
+
+
+          <label for="ext_insumo">Insumo</label>
+          <input list="insumosList" id="ext_insumo" name="insumo" placeholder="Nombre del insumo" />
+          <datalist id="insumosList"></datalist>
+          <select id="ext_insumoSelect" name="insumo" class="mobile-select" style="display:none;" disabled></select>
+
+          <label for="ext_fechaDevolucion">Fecha de devolución</label>
+          <input type="date" id="ext_fechaDevolucion" name="fechaDevolucion" />
+        </div>
+        <!-- Grupo para Solicitud de Equipos -->
+        <div class="field-group ext-group" id="ext-group-equipos">
+          <label for="ext_equipo">Equipo</label>
+          <input list="equiposList" id="ext_equipo" name="equipo" placeholder="Nombre del equipo" />
+          <datalist id="equiposList"></datalist>
+          <select id="ext_equipoSelect" name="equipo" class="mobile-select" style="display:none;" disabled></select>
+
+          <label for="ext_fechaInicialEquipo">Fecha inicial</label>
+          <input type="text" id="ext_fechaInicialEquipo" name="fechaInicial" readonly />
+          
+          <label for="ext_fechaFinalEquipo">Fecha final</label>
+          <input type="text" id="ext_fechaFinalEquipo" name="fechaFinal" readonly />
+
+          <div id="ext_ocupacionEquipos" style="font-size:0.9em; margin-top:0.5rem; color:#333;"></div>
+        </div>
+        <!-- Grupo para Solicitud de Almacenamiento -->
+        <div class="field-group ext-group" id="ext-group-almacenamiento">
+          <label for="ext_descripcionAlmacen">Descripción (muestra o reactivo)</label>
+          <input type="text" id="ext_descripcionAlmacen" name="descripcion" placeholder="Descripción" />
+
+          <label for="ext_fechaInicialAlmacen">Fecha inicial</label>
+          <input type="date" id="ext_fechaInicialAlmacen" name="fechaInicial" />
+
+          <label for="ext_fechaFinalAlmacen">Fecha final</label>
+          <input type="date" id="ext_fechaFinalAlmacen" name="fechaFinal" />
+        </div>
+        <div class="actions">
+          <button type="button" class="form-nav" id="ext-prev-2">Volver</button>
+          <button type="button" class="form-nav" id="ext-next-2">Siguiente</button>
+        </div>
       </div>
-    </div>
-    <!-- Paso 3: Campos generales -->
-    <div class="form-step" id="step-3">
-      <label for="correo">Correo institucional</label>
-      <input type="email" id="correo" name="correo" placeholder="usuario@ikiam.edu.ec" required />
+      <!-- Paso 3: Información general -->
+      <div class="form-step" id="ext-step-3">
+        <input type="hidden" id="ext_tipoHidden" name="tipo" />
 
-      <label for="nombre">Nombre</label>
-      <input type="text" id="nombre" name="nombre" required placeholder="Nombre completo" />
+        <label for="ext_correo">Correo institucional</label>
+        <input type="email" id="ext_correo" name="correo" placeholder="usuario@ikiam.edu.ec" />
 
-      <!-- Tipo de actividad se mueve aquí y se añade nombre -->
-      <label for="tipoActividad">Tipo de actividad</label>
-      <select id="tipoActividad" name="tipoActividad">
-        <option value="">– selecciona –</option>
-        <option value="Tesis">Tesis</option>
-        <option value="Proyecto">Proyecto</option>
-        <option value="Práctica de laboratorio">Práctica de laboratorio</option>
-      </select>
+        <label for="ext_nombre">Nombre</label>
+        <input type="text" id="ext_nombre" name="nombre" placeholder="Nombre completo" />
 
-      <label for="nombreActividad">Nombre del tipo de actividad</label>
-      <input type="text" id="nombreActividad" name="nombreActividad" placeholder="Nombre de la actividad" />
-
-      <label for="observaciones">Observaciones</label>
-      <textarea id="observaciones" name="observaciones" rows="3" placeholder="Escribe aquí cualquier observación adicional"></textarea>
-      <div class="actions">
-        <button type="button" id="prev-3">Anterior</button>
-        <button type="submit">Enviar</button>
+        <label for="ext_observaciones">Observaciones</label>
+        <textarea id="ext_observaciones" name="observaciones" rows="3" placeholder="Escribe aquí cualquier observación adicional"></textarea>
+        <div class="actions">
+          <button type="button" class="form-nav" id="ext-prev-3">Volver</button>
+          <button type="submit" class="form-nav">Enviar</button>
+        </div>
       </div>
-    </div>
-  </form>
+    </form>
+
+    <!-- Formulario para uso interno de reactivos/insumos/equipos -->
+    <form id="internal-form">
+      <!-- Paso 1: Selección del tipo de uso interno -->
+      <div class="form-step" id="int-step-1">
+        <label for="int_tipo">Tipo de uso interno</label>
+        <select id="int_tipo" name="int_tipo" required>
+          <option value="">– selecciona –</option>
+          <option value="Uso de Reactivo">Uso de Reactivo</option>
+          <option value="Uso de Insumos">Uso de Insumos</option>
+          <option value="Uso de equipo">Uso de equipo</option>
+        </select>
+        <div class="actions">
+          <button type="button" class="form-nav" id="int-back-menu">Volver</button>
+          <button type="button" class="form-nav" id="int-next-1">Siguiente</button>
+        </div>
+      </div>
+      <!-- Paso 2: Campos específicos del uso interno -->
+      <div class="form-step" id="int-step-2">
+        <!-- Uso de Reactivo -->
+        <div class="field-group int-group" id="int-group-reactivo">
+          <label for="int_fechaUsoReactivo">Fecha de uso del reactivo</label>
+          <input type="date" id="int_fechaUsoReactivo" name="fechaUsoReactivo" />
+
+          <label for="int_reactivo">Reactivo</label>
+          <input list="reactivosList" id="int_reactivo" name="reactivo" placeholder="Nombre del reactivo" />
+          <select id="int_reactivoSelect" name="reactivo" class="mobile-select" style="display:none;" disabled></select>
+
+          <label for="int_cantidad">Cantidad</label>
+          <input type="number" id="int_cantidad" name="cantidad" min="0" step="0.01" placeholder="Cantidad" />
+
+          <label for="int_unidad">Unidad</label>
+          <input type="text" id="int_unidad" name="unidad" placeholder="mL, g, unidades, etc." />
+
+          <label for="int_tipoActividadReactivo">Tipo de actividad</label>
+          <select id="int_tipoActividadReactivo" name="tipoActividad">
+            <option value="">– selecciona –</option>
+            <option value="Tesis">Tesis</option>
+            <option value="Proyecto">Proyecto</option>
+            <option value="Práctica de laboratorio">Práctica de laboratorio</option>
+          </select>
+
+          <!-- Campo adicional para proyecto/tesis/práctica en uso de reactivo -->
+          <div id="int_actividadDetalleReactivo" class="hidden">
+            <label for="int_nombreActividadDetalle">Nombre del proyecto/tesis/práctica</label>
+            <input type="text" id="int_nombreActividadDetalle" name="nombreProyecto" placeholder="Introduce el nombre" />
+          </div>
+        </div>
+        <!-- Uso de Insumos -->
+        <div class="field-group int-group" id="int-group-insumos">
+          <label for="int_fechaUsoInsumos">Fecha de uso de insumos</label>
+          <input type="date" id="int_fechaUsoInsumos" name="fechaUsoInsumos" />
+
+
+          <label for="int_insumo">Insumo</label>
+          <input list="insumosList" id="int_insumo" name="insumo" placeholder="Nombre del insumo" />
+          <select id="int_insumoSelect" name="insumo" class="mobile-select" style="display:none;" disabled></select>
+
+          <label for="int_nombreActividadInsumo">Nombre de la actividad</label>
+          <input type="text" id="int_nombreActividadInsumo" name="nombreActividad" placeholder="Nombre de la actividad" />
+        </div>
+        <!-- Uso de equipo -->
+        <div class="field-group int-group" id="int-group-equipo">
+          <label for="int_fechaUsoEquipo">Fecha de uso de equipo</label>
+          <input type="date" id="int_fechaUsoEquipo" name="fechaUsoEquipo" />
+
+          <label for="int_equipo">Equipo</label>
+          <input list="equiposList" id="int_equipo" name="equipo" placeholder="Nombre del equipo" />
+          <select id="int_equipoSelect" name="equipo" class="mobile-select" style="display:none;" disabled></select>
+
+          <label for="int_nombreActividadEquipo">Nombre de la actividad</label>
+          <input type="text" id="int_nombreActividadEquipo" name="nombreActividad" placeholder="Nombre de la actividad" />
+        </div>
+        <div class="actions">
+          <button type="button" class="form-nav" id="int-prev-2">Volver</button>
+          <button type="button" class="form-nav" id="int-next-2">Siguiente</button>
+        </div>
+      </div>
+      <!-- Paso 3: Información general -->
+      <div class="form-step" id="int-step-3">
+        <input type="hidden" id="int_tipoHidden" name="tipo" />
+
+        <label for="int_correo">Correo institucional</label>
+        <input type="email" id="int_correo" name="correo" placeholder="usuario@ikiam.edu.ec" />
+
+        <label for="int_nombre">Nombre</label>
+        <input type="text" id="int_nombre" name="nombre" placeholder="Nombre completo" />
+
+        <label for="int_observaciones">Observaciones</label>
+        <textarea id="int_observaciones" name="observaciones" rows="3" placeholder="Escribe aquí cualquier observación adicional"></textarea>
+        <div class="actions">
+          <button type="button" class="form-nav" id="int-prev-3">Volver</button>
+          <button type="submit" class="form-nav">Enviar</button>
+        </div>
+      </div>
+    </form>
+
+    <!-- Formulario para registro de uso interno de laboratorio (profesores, pasantía, laboratorio) -->
+    <form id="lab-form">
+      <!-- Paso 1: Selección del tipo de acción -->
+      <div class="form-step" id="lab-step-1">
+        <label for="lab_tipo">Tipo de registro</label>
+        <select id="lab_tipo" name="lab_tipo" required>
+          <option value="">– selecciona –</option>
+          <option value="Profesores">Profesores</option>
+          <option value="Horas de Pasantía">Horas de Pasantía</option>
+          <option value="Uso de Laboratorio">Uso de Laboratorio</option>
+        </select>
+        <div class="actions">
+          <button type="button" class="form-nav" id="lab-back-menu">Volver</button>
+          <button type="button" class="form-nav" id="lab-next-1">Siguiente</button>
+        </div>
+      </div>
+      <!-- Paso 2: Campos específicos por tipo -->
+      <div class="form-step" id="lab-step-2">
+        <!-- Grupo Profesores -->
+        <div class="field-group lab-group" id="lab-group-profesores">
+          <label for="lab_fechaProfesores">Fecha</label>
+          <input type="date" id="lab_fechaProfesores" name="fecha" />
+
+          <label for="lab_asignatura">Asignatura</label>
+          <input type="text" id="lab_asignatura" name="asignatura" placeholder="Asignatura" />
+
+          <label for="lab_fechaInicialProf">Fecha inicial</label>
+          <input type="date" id="lab_fechaInicialProf" name="fechaInicialProf" />
+
+          <label for="lab_fechaFinalProf">Fecha final</label>
+          <input type="date" id="lab_fechaFinalProf" name="fechaFinalProf" />
+
+          <label for="lab_horaInicialProf">Hora inicial</label>
+          <input type="time" id="lab_horaInicialProf" name="horaInicialProf" />
+
+          <label for="lab_horaFinalProf">Hora final</label>
+          <input type="time" id="lab_horaFinalProf" name="horaFinalProf" />
+
+          <label for="lab_cedula">Cédula</label>
+          <input type="text" id="lab_cedula" name="cedula" placeholder="Cédula" />
+        </div>
+        <!-- Grupo Pasantía -->
+        <div class="field-group lab-group" id="lab-group-pasantia">
+          <label for="lab_fechaPasantia">Fecha de pasantía</label>
+          <input type="date" id="lab_fechaPasantia" name="fechaPasantia" />
+
+          <label for="lab_horasPasantia">Horas</label>
+          <input type="number" id="lab_horasPasantia" name="horas" min="0" placeholder="Número de horas" />
+
+          <label for="lab_actividadPasantia">Actividad realizada</label>
+          <input type="text" id="lab_actividadPasantia" name="actividadRealizada" placeholder="Actividad realizada" />
+        </div>
+        <!-- Grupo Uso de laboratorio -->
+        <div class="field-group lab-group" id="lab-group-lab">
+          <label for="lab_fechaUsoLab">Fecha</label>
+          <input type="date" id="lab_fechaUsoLab" name="fechaUsoLab" />
+
+          <label for="lab_horaIngreso">Hora de ingreso</label>
+          <input type="time" id="lab_horaIngreso" name="horaIngreso" />
+
+          <label for="lab_horaSalida">Hora de salida</label>
+          <input type="time" id="lab_horaSalida" name="horaSalida" />
+
+          <label for="lab_actividadLab">Actividad realizada</label>
+          <input type="text" id="lab_actividadLab" name="actividadRealizada" placeholder="Actividad realizada" />
+
+          <!-- Cambiamos "Tipo de actividad" por "Tipo de persona" con opciones estudiante/investigador -->
+          <label for="lab_tipoActividadLab">Tipo de persona</label>
+          <select id="lab_tipoActividadLab" name="tipoActividadRealizada">
+            <option value="">– selecciona –</option>
+            <option value="Estudiante">Estudiante</option>
+            <option value="Investigador">Investigador</option>
+          </select>
+        </div>
+        <div class="actions">
+          <button type="button" class="form-nav" id="lab-prev-2">Volver</button>
+          <button type="button" class="form-nav" id="lab-next-2">Siguiente</button>
+        </div>
+      </div>
+      <!-- Paso 3: Información general -->
+      <div class="form-step" id="lab-step-3">
+        <input type="hidden" id="lab_tipoHidden" name="tipo" />
+
+        <label for="lab_correo">Correo institucional</label>
+        <input type="email" id="lab_correo" name="correo" placeholder="usuario@ikiam.edu.ec" />
+
+        <label for="lab_nombre">Nombre</label>
+        <input type="text" id="lab_nombre" name="nombre" placeholder="Nombre completo" />
+
+        <label for="lab_observaciones">Observaciones</label>
+        <textarea id="lab_observaciones" name="observaciones" rows="3" placeholder="Escribe aquí cualquier observación adicional"></textarea>
+        <div class="actions">
+          <button type="button" class="form-nav" id="lab-prev-3">Volver</button>
+          <button type="submit" class="form-nav">Enviar</button>
+        </div>
+      </div>
+    </form>
   </main>
-  <footer class="footer">
+  <footer>
     <p><strong>Contacto:</strong> thomas.garzon@ikiam.edu.ec</p>
     <p><strong>Teléfono:</strong> 0959546317</p>
-    <p><strong>Ubicación:</strong> Laboratorio Quimica 1 de Docencia - Tena, Ecuador</p>
+    <p><strong>Ubicación:</strong> Laboratorio Química 1 de Docencia - Tena, Ecuador</p>
   </footer>
   <script>
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxWhkn_HLyogNUYfzoZlypV6BxK4TXt4Gyi8--fLwJRXWKskePsWrLwOeaBXK4El3mhag/exec';
-    // Manejo de pasos
-    const steps = Array.from(document.querySelectorAll('.form-step'));
-    let currentStep = 0;
-    function showStep(index) {
-      steps.forEach((s, i) => s.classList.toggle('active', i === index));
-      currentStep = index;
+    // URL de Apps Script: actualice con su URL de implementación
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwjqcq73Wsl5mNyXDP_sm6kXKy-thQNCbP-fJtg8mlbByIcbbRiUpCjWSjtZQY1SoSNGA/exec';
+
+    // Variables para control de pasos
+    let extStep = 0;
+    let intStep = 0;
+    let labStep = 0;
+
+    // Elementos de menú y formularios
+    const menuDiv     = document.getElementById('menu');
+    const externalForm = document.getElementById('external-form');
+    const internalForm = document.getElementById('internal-form');
+    const labForm      = document.getElementById('lab-form');
+
+    // Botones de menú
+    document.getElementById('btn-external').addEventListener('click', () => {
+      showForm(externalForm);
+      extStep = 0;
+      showExternalStep(extStep);
+    });
+    document.getElementById('btn-internal').addEventListener('click', () => {
+      showForm(internalForm);
+      intStep = 0;
+      showInternalStep(intStep);
+    });
+    document.getElementById('btn-lab').addEventListener('click', () => {
+      showForm(labForm);
+      labStep = 0;
+      showLabStep(labStep);
+    });
+
+    // Botones para volver al menú desde el paso 1 de cada formulario
+    document.getElementById('ext-back-menu').addEventListener('click', () => {
+      externalForm.reset();
+      extStep = 0;
+      returnToMenu();
+    });
+    document.getElementById('int-back-menu').addEventListener('click', () => {
+      internalForm.reset();
+      intStep = 0;
+      returnToMenu();
+    });
+    document.getElementById('lab-back-menu').addEventListener('click', () => {
+      labForm.reset();
+      labStep = 0;
+      returnToMenu();
+    });
+
+    function showForm(form) {
+      menuDiv.style.display = 'none';
+      externalForm.classList.remove('active');
+      internalForm.classList.remove('active');
+      labForm.classList.remove('active');
+      form.classList.add('active');
     }
-    showStep(0);
-    // Referencias a select y grupos
-    const tipoSelect = document.getElementById('tipo');
-    const groups = document.querySelectorAll('.field-group');
-    function toggleGroups() {
-      groups.forEach(g => {
-        g.style.display = 'none';
-        g.querySelectorAll('input, select, textarea').forEach(f => f.required = false);
-      });
-      const mapping = {
-        pasantia: '.group-pasantia',
-        reactivos: '.group-reactivos',
-        insumos: '.group-insumos',
-        equipos: '.group-equipos',
-        almacenamiento: '.group-almacenamiento',
-        usolab: '.group-usolab'
-      };
-      const selector = mapping[tipoSelect.value];
-      if (!selector) return;
-      const active = document.querySelector(selector);
-      active.style.display = 'block';
-      // Marcar obligatorios solo para los campos visibles (excepto unidades y observaciones que pueden ser opcionales)
-      active.querySelectorAll('input[required], select[required]').forEach(f => f.required = true);
-      if (tipoSelect.value === 'equipos') {
-        refreshEquiposList();
-        fetchBusyEquipos(document.getElementById('equipo').value.trim());
-      }
+    function returnToMenu() {
+      menuDiv.style.display = 'flex';
+      externalForm.classList.remove('active');
+      internalForm.classList.remove('active');
+      labForm.classList.remove('active');
     }
-    tipoSelect.addEventListener('change', toggleGroups);
-    // Navegación pasos
-    document.getElementById('next-1').addEventListener('click', () => {
-      if (!tipoSelect.value) {
-        alert('Por favor, seleccione un tipo de acción.');
+
+    /* ====================== FORMULARIO EXTERNO ======================== */
+    const extSteps = [
+      document.getElementById('ext-step-1'),
+      document.getElementById('ext-step-2'),
+      document.getElementById('ext-step-3'),
+    ];
+    const extTipoSelect   = document.getElementById('ext_tipo');
+    const extTipoHidden   = document.getElementById('ext_tipoHidden');
+    const extGroups       = {
+      'Solicitud de Reactivos': document.getElementById('ext-group-reactivos'),
+      'Solicitud de Insumos': document.getElementById('ext-group-insumos'),
+      'Solicitud de Equipos': document.getElementById('ext-group-equipos'),
+      'Solicitud de Almacenamiento': document.getElementById('ext-group-almacenamiento')
+    };
+    // Navegación para solicitud externa
+    document.getElementById('ext-next-1').addEventListener('click', () => {
+      if (!extTipoSelect.value) {
+        alert('Por favor, seleccione un tipo de solicitud.');
         return;
       }
-      toggleGroups();
-      showStep(1);
+      extTipoHidden.value = extTipoSelect.value;
+      toggleExtGroups();
+      extStep = 1;
+      showExternalStep(extStep);
     });
-    document.getElementById('prev-2').addEventListener('click', () => showStep(0));
-    document.getElementById('next-2').addEventListener('click', () => {
-      // Validar campos visibles en el paso 2 antes de pasar al paso 3
-      const visibleGroup = Array.from(groups).find(g => g.style.display === 'block');
-      const invalid = Array.from(visibleGroup.querySelectorAll('[required]')).some(f => !f.value);
+    document.getElementById('ext-prev-2').addEventListener('click', () => {
+      extStep = 0;
+      showExternalStep(extStep);
+    });
+    document.getElementById('ext-next-2').addEventListener('click', () => {
+      // Validar campos visibles del grupo seleccionado en paso 2
+      const group = extGroups[extTipoSelect.value];
+      let invalid = false;
+      group.querySelectorAll('input, select').forEach(el => {
+        if (el.hasAttribute('required') && !el.value) invalid = true;
+      });
       if (invalid) {
         alert('Por favor, complete todos los campos requeridos.');
         return;
       }
-      showStep(2);
+      extStep = 2;
+      showExternalStep(extStep);
     });
-    document.getElementById('prev-3').addEventListener('click', () => showStep(1));
-    // Cargar listas
-    async function loadList(action, listId, params = {}) {
+    document.getElementById('ext-prev-3').addEventListener('click', () => {
+      extStep = 1;
+      showExternalStep(extStep);
+    });
+    externalForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(externalForm);
+      try {
+        const resp = await fetch(WEB_APP_URL, {
+          method: 'POST',
+          body: formData,
+        });
+        const text = await resp.text();
+        alert(text || '¡Registro completo!');
+      } catch (err) {
+        alert('Error al enviar datos');
+      }
+      externalForm.reset();
+      returnToMenu();
+    });
+    function showExternalStep(i) {
+      extSteps.forEach((step, idx) => step.classList.toggle('active', idx === i));
+    }
+    function toggleExtGroups() {
+      // Ocultar todos los grupos
+      Object.values(extGroups).forEach(g => g.style.display = 'none');
+      // Reset campos de fecha para equipos (flatpickr)
+      // Si existe la instancia de flatpickr para rango, limpiar cualquier selección previa
+      if (flatpickrInstanceExt) {
+        flatpickrInstanceExt.clear();
+      }
+      // Mostrar grupo seleccionado y marcar campos requeridos
+      const grp = extGroups[extTipoSelect.value];
+      if (grp) {
+        grp.style.display = 'block';
+        grp.querySelectorAll('input, select').forEach(el => {
+          el.required = true;
+        });
+
+        // Si se trata del grupo de reactivos, reiniciar el campo de detalle de actividad
+        if (extTipoSelect.value === 'Solicitud de Reactivos') {
+          toggleExtActividadDetalle();
+        }
+      }
+    }
+
+    /* ======= Configuración de fechas para equipos (rango) ======== */
+    let flatpickrInstanceExt;
+    function setupEquipmentRange() {
+      const startInput = document.getElementById('ext_fechaInicialEquipo');
+      const endInput   = document.getElementById('ext_fechaFinalEquipo');
+      flatpickrInstanceExt = flatpickr(startInput, {
+        // Se cambia el formato de fecha a dd/mm/yyyy
+        dateFormat: 'd/m/Y',
+        plugins: [new rangePlugin({ input: endInput })],
+        onChange: function(selectedDates) {
+          if (selectedDates.length === 2) {
+            const [start, end] = selectedDates;
+            // Convertimos a ISO (yyyy-mm-dd) para las consultas al servidor
+            refreshEquiposList(start.toISOString().slice(0,10), end.toISOString().slice(0,10));
+          }
+        },
+      });
+    }
+
+    /* ============ FORMULARIO INTERNO ============= */
+    const intSteps = [
+      document.getElementById('int-step-1'),
+      document.getElementById('int-step-2'),
+      document.getElementById('int-step-3'),
+    ];
+    const intTipoSelect = document.getElementById('int_tipo');
+    const intTipoHidden = document.getElementById('int_tipoHidden');
+    const intGroups = {
+      'Uso de Reactivo': document.getElementById('int-group-reactivo'),
+      'Uso de Insumos': document.getElementById('int-group-insumos'),
+      'Uso de equipo': document.getElementById('int-group-equipo')
+    };
+    document.getElementById('int-next-1').addEventListener('click', () => {
+      if (!intTipoSelect.value) {
+        alert('Por favor, seleccione un tipo de uso.');
+        return;
+      }
+      intTipoHidden.value = intTipoSelect.value;
+      toggleIntGroups();
+      intStep = 1;
+      showInternalStep(intStep);
+    });
+    document.getElementById('int-prev-2').addEventListener('click', () => {
+      intStep = 0;
+      showInternalStep(intStep);
+    });
+    document.getElementById('int-next-2').addEventListener('click', () => {
+      const grp = intGroups[intTipoSelect.value];
+      let invalid = false;
+      grp.querySelectorAll('input, select').forEach(el => {
+        if (el.hasAttribute('required') && !el.value) invalid = true;
+      });
+      if (invalid) {
+        alert('Por favor, complete todos los campos requeridos.');
+        return;
+      }
+      intStep = 2;
+      showInternalStep(intStep);
+    });
+    document.getElementById('int-prev-3').addEventListener('click', () => {
+      intStep = 1;
+      showInternalStep(intStep);
+    });
+    internalForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(internalForm);
+      try {
+        const resp = await fetch(WEB_APP_URL, { method: 'POST', body: formData });
+        const text = await resp.text();
+        alert(text || '¡Registro completo!');
+      } catch (err) {
+        alert('Error al enviar datos');
+      }
+      internalForm.reset();
+      returnToMenu();
+    });
+    function showInternalStep(i) {
+      intSteps.forEach((step, idx) => step.classList.toggle('active', idx === i));
+    }
+    function toggleIntGroups() {
+      Object.values(intGroups).forEach(g => g.style.display = 'none');
+      const group = intGroups[intTipoSelect.value];
+      if (group) {
+        group.style.display = 'block';
+        group.querySelectorAll('input, select').forEach(el => {
+          el.required = true;
+        });
+
+        // Si se trata del grupo de uso de reactivo, reiniciar el campo de detalle de actividad
+        if (intTipoSelect.value === 'Uso de Reactivo') {
+          toggleIntActividadDetalleReactivo();
+        }
+      }
+    }
+
+    /* ============ FORMULARIO LABORATORIO ============= */
+    const labSteps = [
+      document.getElementById('lab-step-1'),
+      document.getElementById('lab-step-2'),
+      document.getElementById('lab-step-3'),
+    ];
+    const labTipoSelect  = document.getElementById('lab_tipo');
+    const labTipoHidden  = document.getElementById('lab_tipoHidden');
+    const labGroups      = {
+      'Profesores': document.getElementById('lab-group-profesores'),
+      'Horas de Pasantía': document.getElementById('lab-group-pasantia'),
+      'Uso de Laboratorio': document.getElementById('lab-group-lab')
+    };
+    document.getElementById('lab-next-1').addEventListener('click', () => {
+      if (!labTipoSelect.value) {
+        alert('Por favor, seleccione un tipo de registro.');
+        return;
+      }
+      labTipoHidden.value = labTipoSelect.value;
+      toggleLabGroups();
+      labStep = 1;
+      showLabStep(labStep);
+    });
+    document.getElementById('lab-prev-2').addEventListener('click', () => {
+      labStep = 0;
+      showLabStep(labStep);
+    });
+    document.getElementById('lab-next-2').addEventListener('click', () => {
+      const grp = labGroups[labTipoSelect.value];
+      let invalid = false;
+      grp.querySelectorAll('input, select').forEach(el => {
+        if (el.hasAttribute('required') && !el.value) invalid = true;
+      });
+      if (invalid) {
+        alert('Por favor, complete todos los campos requeridos.');
+        return;
+      }
+      labStep = 2;
+      showLabStep(labStep);
+    });
+    document.getElementById('lab-prev-3').addEventListener('click', () => {
+      labStep = 1;
+      showLabStep(labStep);
+    });
+    labForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(labForm);
+      try {
+        const resp = await fetch(WEB_APP_URL, { method: 'POST', body: formData });
+        const text = await resp.text();
+        alert(text || '¡Registro completo!');
+      } catch (err) {
+        alert('Error al enviar datos');
+      }
+      labForm.reset();
+      returnToMenu();
+    });
+    function showLabStep(i) {
+      labSteps.forEach((step, idx) => step.classList.toggle('active', idx === i));
+    }
+    function toggleLabGroups() {
+      Object.values(labGroups).forEach(g => g.style.display = 'none');
+      const grp = labGroups[labTipoSelect.value];
+      if (grp) {
+        grp.style.display = 'block';
+        grp.querySelectorAll('input, select').forEach(el => {
+          el.required = true;
+        });
+      }
+    }
+
+    /* =================== CARGA DE LISTAS ==================== */
+    async function loadList(action, listId) {
       const url = new URL(WEB_APP_URL);
       url.searchParams.set('action', action);
-      Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-      const resp = await fetch(url);
-      const items = await resp.json();
-      const dl = document.getElementById(listId);
-      dl.innerHTML = items.map(i => `<option value="${i}"></option>`).join('');
+      try {
+        const resp = await fetch(url);
+        const items = await resp.json();
+        const dl = document.getElementById(listId);
+        if (!dl) return;
+        dl.innerHTML = items.map(i => `<option value="${i}"></option>`).join('');
+        // También llenar el select asociado
+        const selectMapping = {
+          reactivosList: ['ext_reactivoSelect', 'int_reactivoSelect'],
+          insumosList:   ['ext_insumoSelect', 'int_insumoSelect'],
+          equiposList:   ['ext_equipoSelect', 'int_equipoSelect']
+        };
+        const selectIds = selectMapping[listId] || [];
+        selectIds.forEach(selId => {
+          const sel = document.getElementById(selId);
+          if (sel) {
+            sel.innerHTML = items.map(i => `<option value="${i}">${i}</option>`).join('');
+          }
+        });
+      } catch (err) {
+        console.warn('Error cargando lista', action);
+      }
     }
     window.addEventListener('load', () => {
       loadList('listReactivos', 'reactivosList');
       loadList('listInsumos', 'insumosList');
       loadList('listEquipos', 'equiposList');
+      setupEquipmentRange();
+      toggleInputModes();
+
+      // Inicializar campos de detalle de actividades
+      toggleExtActividadDetalle();
+      toggleIntActividadDetalleReactivo();
+
+      // Configurar escuchas de cambio para los selectores de tipo de actividad
+      const selExt = document.getElementById('ext_tipoActividad');
+      if (selExt) selExt.addEventListener('change', toggleExtActividadDetalle);
+      const selIntReac = document.getElementById('int_tipoActividadReactivo');
+      if (selIntReac) selIntReac.addEventListener('change', toggleIntActividadDetalleReactivo);
     });
-    document.getElementById('descripcion').addEventListener('input', e => {
-      const q = e.target.value.trim();
-      loadList('listReactivos', 'reactivosList', { q });
-    });
-    document.getElementById('insumo').addEventListener('input', e => {
-      const q = e.target.value.trim();
-      loadList('listInsumos', 'insumosList', { q });
-    });
-    function refreshEquiposList() {
-      const start = document.getElementById('fechaInicialEquipo').value;
-      const end   = document.getElementById('fechaFinalEquipo').value;
-      const q     = document.getElementById('equipo').value.trim();
-      // Si no hay texto suficiente en el campo de búsqueda, cargar lista completa para reducir llamadas
-      if (!q || q.length < 2) {
-        loadList('listEquipos', 'equiposList');
-        return;
-      }
-      if (start && end) {
-        loadList('availEquipos', 'equiposList', { start, end, q });
-      } else {
-        loadList('listEquipos', 'equiposList', { q });
-      }
-    }
-    document.getElementById('equipo').addEventListener('input', () => refreshEquiposList());
-    // Fechas ocupadas para equipos y flatpickr
-    // Almacena en caché las fechas ocupadas por equipo para evitar solicitudes repetidas
-    const busyEquipCache = {};
-    async function fetchBusyEquipos(equipo) {
-      const container = document.getElementById('ocupacionEquipos');
-      if (!equipo) {
-        container.textContent = '';
-        setupDatepickers([]);
-        return;
-      }
-      // Si ya tenemos en caché el equipo seleccionado, usarlo directamente
-      if (busyEquipCache[equipo]) {
-        setupDatepickers(busyEquipCache[equipo]);
-        return;
-      }
-      container.textContent = 'Cargando disponibilidad...';
-      try {
-        const url = new URL(WEB_APP_URL);
-        url.searchParams.set('action', 'busyEquipos');
-        url.searchParams.set('equipo', equipo);
-        const resp = await fetch(url);
-        const bookings = await resp.json();
-        if (!Array.isArray(bookings) || bookings.length === 0) {
-          container.textContent = '';
-          setupDatepickers([]);
-          busyEquipCache[equipo] = [];
-          return;
+    
+    /* Ajusta visibilidad de inputs vs selects según ancho de pantalla */
+    function toggleInputModes() {
+      const isMobile = window.matchMedia('(max-width: 600px)').matches;
+      const pairs = [
+        { input: 'ext_reactivo', select: 'ext_reactivoSelect' },
+        { input: 'ext_insumo',  select: 'ext_insumoSelect' },
+        { input: 'ext_equipo',  select: 'ext_equipoSelect' },
+        { input: 'int_reactivo', select: 'int_reactivoSelect' },
+        { input: 'int_insumo', select: 'int_insumoSelect' },
+        { input: 'int_equipo', select: 'int_equipoSelect' }
+      ];
+      pairs.forEach(({ input, select }) => {
+        const inp = document.getElementById(input);
+        const sel = document.getElementById(select);
+        if (!inp || !sel) return;
+        if (isMobile) {
+          inp.style.display = 'none';
+          inp.disabled = true;
+          sel.style.display = 'block';
+          sel.disabled = false;
+        } else {
+          inp.style.display = 'block';
+          inp.disabled = false;
+          sel.style.display = 'none';
+          sel.disabled = true;
         }
-        const ranges = bookings.map(b => ({ from: b.from, to: b.to }));
-        busyEquipCache[equipo] = ranges;
-        container.textContent = '';
-        setupDatepickers(ranges);
-      } catch (err) {
-        container.textContent = 'No se pudo cargar la disponibilidad.';
-        setupDatepickers([]);
-      }
-    }
-    document.getElementById('equipo').addEventListener('change', e => {
-      fetchBusyEquipos(e.target.value.trim());
-    });
-    let fpInstance = null;
-    function setupDatepickers(disabledRanges) {
-      if (fpInstance) { fpInstance.destroy(); }
-      const disabled = disabledRanges.map(r => ({ from: r.from, to: r.to }));
-      fpInstance = flatpickr(document.getElementById('fechaInicialEquipo'), {
-        mode: 'range',
-        dateFormat: 'Y-m-d',
-        locale: 'es',
-        plugins: [new rangePlugin({ input: '#fechaFinalEquipo' })],
-        disable: disabled,
-        onChange: () => refreshEquiposList()
       });
     }
-    // Inicializar datepickers vacío
-    setupDatepickers([]);
-    // Envío del formulario
-    document.getElementById('lab-form').addEventListener('submit', async event => {
-      event.preventDefault();
-      const form = event.target;
-      const formData = new FormData(form);
-      try {
-        const resp = await fetch(form.action, { method: 'POST', body: formData });
-        const text = await resp.text();
-        alert(text);
-        form.reset();
-        showStep(0);
-        setupDatepickers([]);
-      } catch (err) {
-        alert('Ocurrió un error al enviar el formulario.');
+    window.addEventListener('resize', toggleInputModes);
+
+    /* =============================================================
+     *  Campos dinámicos para nombre de proyecto/tesis/práctica
+     *  Estas funciones muestran u ocultan un campo de texto adicional
+     *  dependiendo del valor seleccionado en el combo "Tipo de actividad".
+     */
+    function toggleExtActividadDetalle() {
+      const container = document.getElementById('ext_actividadDetalle');
+      const select   = document.getElementById('ext_tipoActividad');
+      if (!container || !select) return;
+      const label    = container.querySelector('label');
+      const input    = container.querySelector('input');
+      const val      = select.value;
+      if (val === 'Proyecto' || val === 'Tesis' || val === 'Práctica de laboratorio') {
+        // Ajustar la etiqueta según el tipo de actividad
+        if (val === 'Proyecto') label.textContent = 'Nombre del proyecto';
+        else if (val === 'Tesis') label.textContent = 'Nombre de la tesis';
+        else label.textContent = 'Nombre de la práctica de laboratorio';
+        container.classList.remove('hidden');
+        input.required = true;
+      } else {
+        container.classList.add('hidden');
+        input.value = '';
+        input.required = false;
       }
-    });
+    }
+
+    function toggleIntActividadDetalleReactivo() {
+      const container = document.getElementById('int_actividadDetalleReactivo');
+      const select   = document.getElementById('int_tipoActividadReactivo');
+      if (!container || !select) return;
+      const label    = container.querySelector('label');
+      const input    = container.querySelector('input');
+      const val      = select.value;
+      if (val === 'Proyecto' || val === 'Tesis' || val === 'Práctica de laboratorio') {
+        if (val === 'Proyecto') label.textContent = 'Nombre del proyecto';
+        else if (val === 'Tesis') label.textContent = 'Nombre de la tesis';
+        else label.textContent = 'Nombre de la práctica de laboratorio';
+        container.classList.remove('hidden');
+        input.required = true;
+      } else {
+        container.classList.add('hidden');
+        input.value = '';
+        input.required = false;
+      }
+    }
+
+    // Exponer funciones a nivel global para que puedan llamarse en otros lugares
+    window.toggleExtActividadDetalle = toggleExtActividadDetalle;
+    window.toggleIntActividadDetalleReactivo = toggleIntActividadDetalleReactivo;
+
+    /* Funciones para disponibilidad de equipos */
+    async function refreshEquiposList(start, end) {
+      // Obtiene solo los equipos disponibles dentro del rango seleccionado
+      const url = new URL(WEB_APP_URL);
+      url.searchParams.set('action', 'availEquipos');
+      if (start) url.searchParams.set('start', start);
+      if (end)   url.searchParams.set('end', end);
+      try {
+        const resp = await fetch(url);
+        const available = await resp.json();
+        const select = document.getElementById('ext_equipoSelect');
+        const dl     = document.getElementById('equiposList');
+        if (Array.isArray(available)) {
+          select.innerHTML = available.map(e => `<option value="${e}">${e}</option>`).join('');
+          dl.innerHTML     = available.map(e => `<option value="${e}"></option>`).join('');
+        }
+      } catch (err) {
+        console.warn('Error al refrescar equipos');
+      }
+    }
   </script>
 </body>
 </html>
