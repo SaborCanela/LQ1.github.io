@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro de uso – LQ1D</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <style>
+    :root {
+      --primary: #007bff;
+      --primary-dark: #0056b3;
+      --error: #dc3545;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #e8f0fe 0%, #f5faff 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    header img {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.2rem;
+      color: #001d3a;
+    }
+    main {
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+      padding: 1rem;
+    }
+    form {
+      width: 100%;
+      max-width: 600px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    fieldset {
+      border: none;
+      margin: 0;
+      padding: 0;
+      display: none;
+    }
+    fieldset.active {
+      display: block;
+    }
+    label {
+      display: block;
+      margin-top: 0.75rem;
+      font-weight: 500;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 0.6rem;
+      font-size: 1rem;
+      border: none;
+      border-bottom: 1px solid #ccc;
+      background: transparent;
+      color: #333;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-bottom: 2px solid var(--primary);
+    }
+    .actions {
+      margin-top: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+    }
+    button {
+      padding: 0.6rem 1.25rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      background: var(--primary);
+      color: #fff;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: var(--primary-dark);
+    }
+    .error-msg {
+      color: var(--error);
+      font-size: 0.85rem;
+      margin-top: 0.25rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="logo.png" alt="Logo del laboratorio" loading="lazy">
+    <h1>Registro de uso</h1>
+  </header>
+  <main>
+    <form id="registroForm" novalidate>
+      <!-- Paso 1 -->
+      <fieldset id="step-1" class="active">
+        <legend>Tipo de registro</legend>
+        <label for="tipoRegistro">Seleccione el tipo de registro</label>
+        <select id="tipoRegistro" name="tipo" required aria-required="true">
+          <option value="">– selecciona –</option>
+          <option value="Practica">Práctica de lab o Cátedra</option>
+          <option value="Pasantia">Pasantías</option>
+          <option value="Tesis">Tesis/Proyectos</option>
+        </select>
+        <div class="actions">
+          <button type="button" id="cancelBtn">Cancelar</button>
+          <button type="button" id="next1Btn">Siguiente</button>
+        </div>
+      </fieldset>
+      <!-- Paso 2 -->
+      <fieldset id="step-2">
+        <legend id="legend-2">Detalles del registro</legend>
+        <!-- Contenedor dinámico según tipo -->
+        <div id="contenedorTipo"></div>
+        <div class="actions">
+          <button type="button" id="back2Btn">Anterior</button>
+          <button type="button" id="next2Btn">Siguiente</button>
+        </div>
+      </fieldset>
+      <!-- Paso 3 -->
+      <fieldset id="step-3">
+        <legend>Datos generales</legend>
+        <label for="nombre">Nombre</label>
+        <input type="text" id="nombre" name="nombre" required aria-required="true" placeholder="Nombre completo">
+        <label for="fecha">Fecha</label>
+        <input type="text" id="fecha" name="fecha" required aria-required="true" placeholder="dd/mm/aaaa">
+        <label for="correo">Correo institucional</label>
+        <input type="email" id="correo" name="correo" required aria-required="true" placeholder="usuario@ikiam.edu.ec">
+        <label for="observaciones">Observaciones</label>
+        <textarea id="observaciones" name="observaciones" rows="3" placeholder="Observaciones"></textarea>
+        <div class="actions">
+          <button type="button" id="back3Btn">Anterior</button>
+          <button type="submit">Enviar</button>
+        </div>
+      </fieldset>
+    </form>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script type="module" src="registro-uso.js"></script>
+</body>
+</html>
