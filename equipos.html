@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Equipos – LQ1D</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <style>
+    :root {
+      --primary: #007bff;
+      --primary-dark: #0056b3;
+      --bg: #f5faff;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --border-radius: 0.75rem;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #e8f0fe 0%, #f5faff 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    header img {
+      width: 32px;
+      height: 32px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.2rem;
+    }
+    main {
+      flex-grow: 1;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .card {
+      width: 100%;
+      max-width: 800px;
+      background: var(--card-bg);
+      padding: 1.5rem;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      margin-bottom: 1rem;
+    }
+    .hidden { display: none !important; }
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: 500;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border: none;
+      border-bottom: 1px solid #ccc;
+      background: transparent;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-bottom: 2px solid var(--primary);
+    }
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      margin-top: 1.5rem;
+    }
+    button {
+      padding: 0.6rem 1.2rem;
+      font-size: 0.95rem;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      background: var(--primary);
+      color: white;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: var(--primary-dark);
+    }
+    .equipment-image {
+      width: 100%;
+      max-height: 250px;
+      object-fit: cover;
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+    }
+    .summary {
+      border-top: 1px solid #ddd;
+      padding-top: 1rem;
+      margin-top: 1rem;
+    }
+    .summary ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .summary li {
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <button id="backHome" aria-label="Volver al inicio" style="background:none;border:none;color:#007bff;font-size:1rem;cursor:pointer">← Inicio</button>
+    <h1>Equipos</h1>
+  </header>
+  <main>
+    <!-- Paso 1: Búsqueda -->
+    <div class="card" id="step1">
+      <h2>Búsqueda de equipos</h2>
+      <label for="equipoBusqueda">Equipo</label>
+      <input type="text" id="equipoBusqueda" list="equiposList" placeholder="Escribe o selecciona el equipo" autocomplete="off">
+      <datalist id="equiposList"></datalist>
+      <div class="actions">
+        <button id="buscarEquipoBtn">Buscar</button>
+      </div>
+    </div>
+    <!-- Paso 2: Detalle y acción -->
+    <div class="card hidden" id="step2">
+      <h2 id="equipoNombre">Equipo</h2>
+      <img id="equipoImg" class="equipment-image" src="" alt="Imagen del equipo" loading="lazy">
+      <label for="equipoAccion">Tipo de acción</label>
+      <select id="equipoAccion">
+        <option value="">– selecciona –</option>
+        <option value="Solicitud">Solicitud</option>
+        <option value="Registro">Registro</option>
+      </select>
+      <!-- Formulario para Solicitud -->
+      <div id="formSolicitud" class="hidden">
+        <label for="solicitudRango">Rango de uso (fecha inicio – fecha fin)</label>
+        <input type="text" id="solicitudRango" placeholder="Selecciona rango" readonly>
+        <div id="ocupacionInfo" style="font-size:0.85rem;color:#555;margin-top:0.5rem;"></div>
+      </div>
+      <!-- Formulario para Registro -->
+      <div id="formRegistro" class="hidden">
+        <label for="registroFecha">Fecha de uso</label>
+        <input type="text" id="registroFecha" placeholder="dd/mm/aaaa" readonly>
+        <label for="registroActividad">Actividad</label>
+        <select id="registroActividad">
+          <option value="">– selecciona –</option>
+          <option value="Práctica de laboratorio">Práctica de laboratorio</option>
+          <option value="Proyecto">Proyecto</option>
+          <option value="Tesis">Tesis</option>
+        </select>
+        <label for="registroDescripcion">Actividad que se realizó</label>
+        <input type="text" id="registroDescripcion" placeholder="Descripción">
+      </div>
+      <div class="actions">
+        <button id="cancelStep2">Cancelar</button>
+        <button id="addEquipoBtn">Agregar otro equipo</button>
+        <button id="finalizarEquipoBtn">Finalizar</button>
+      </div>
+    </div>
+    <!-- Paso 3: Resumen y datos generales -->
+    <div class="card hidden" id="step3">
+      <h2>Resumen de equipos</h2>
+      <div id="listaEquiposResumen" class="summary"></div>
+      <label for="equipoNombreUsuario">Nombre</label>
+      <input type="text" id="equipoNombreUsuario" placeholder="Nombre completo" required>
+      <label for="equipoCorreoUsuario">Correo institucional</label>
+      <input type="email" id="equipoCorreoUsuario" placeholder="usuario@ikiam.edu.ec" required>
+      <label for="equipoObservaciones">Observaciones</label>
+      <textarea id="equipoObservaciones" rows="3" placeholder="Observaciones"></textarea>
+      <div class="actions">
+        <button id="backToSearch">← Volver</button>
+        <button id="enviarEquipos">Enviar</button>
+      </div>
+    </div>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/rangePlugin.js"></script>
+  <script type="module" src="equipos.js"></script>
+</body>
+</html>
