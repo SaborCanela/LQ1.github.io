@@ -38,7 +38,7 @@ const sheetInsumosData   = SpreadsheetApp.openById('1xX56wX8DfJhyUXpi9lUBN78cQqh
 
 ```js
 const ADMIN_EMAIL = 'thomas.garzon@ikiam.edu.ec';      // Correo al que se enviarán las notificaciones administrativas
-const DRIVE_FOLDER_ID = '1W--folderId';                // ID de la carpeta en Drive donde se guardarán adjuntos
+const DRIVE_FOLDER_ID = '1cjvkCphJWlL_BRXp2YcyckD-QOfZQCZ-';                // ID de la carpeta en Drive donde se guardarán adjuntos
 ```
 
 4. **Desplegar como Web App**: en el editor de Apps Script:
