@@ -66,6 +66,7 @@ function processMultiRequest_(ss, params) {
       'Total items: ' + items.length
     ]);
   }
+<<<<<<< Updated upstream
   // Registrar cada ítem
   items.forEach(function(item) {
     var t = item.tipo || '';
@@ -120,7 +121,88 @@ function processMultiRequest_(ss, params) {
             correo
           ]);
         }
+=======
+
+  // Registrar ítem por ítem
+  items.forEach(it => {
+    switch (it.tipo) {
+      case 'Solicitud de Equipos': {
+        // Combina actividad y descripción en la columna de observaciones
+        let obsRow = observaciones || '';
+        if (it.actividad) {
+          obsRow += (obsRow ? '; ' : '') + 'Actividad: ' + it.actividad;
+        }
+        if (it.descripcion) {
+          obsRow += (obsRow ? '; ' : '') + it.descripcion;
+        }
+        sheetEquipos && sheetEquipos.appendRow([
+          nombre,
+          fecha,
+          it.equipo || '',
+          it.fechaInicial || '',
+          it.fechaFinal || '',
+          obsRow,
+          correo
+        ]);
         break;
+      }
+      case 'Uso de equipo': {
+        // Para uso, nombreActividad se almacena en it.actividad y la descripción en it.descripcion
+        let obsRow = '';
+        if (it.descripcion) obsRow += it.descripcion;
+        if (observaciones) obsRow += (obsRow ? '; ' : '') + observaciones;
+        sheetUsoEquipo && sheetUsoEquipo.appendRow([
+          nombre,
+          it.fechaUsoEquipo || fecha,
+          it.equipo || '',
+          it.actividad || '',
+          obsRow,
+          correo
+        ]);
+        break;
+      }
+      case 'Solicitud de Insumos': {
+        let obsRow = 'Cantidad: ' + (it.cantidad || '');
+        if (it.actividad) {
+          obsRow += '; Actividad: ' + it.actividad;
+        }
+        if (it.descripcion) {
+          obsRow += '; ' + it.descripcion;
+        }
+        if (observaciones) {
+          obsRow += '; ' + observaciones;
+        }
+        sheetInsumos && sheetInsumos.appendRow([
+          nombre,
+          it.fechaSolicitudInsumos || fecha,
+          '', // estado (si aplica en tu hoja)
+          it.insumo || '',
+          it.fechaDevolucion || '',
+          obsRow,
+          correo
+        ]);
+        break;
+      }
+      case 'Uso de Insumos': {
+        let obsRow = 'Cantidad: ' + (it.cantidad || '');
+        if (it.descripcion) {
+          obsRow += '; ' + it.descripcion;
+        }
+        if (observaciones) {
+          obsRow += '; ' + observaciones;
+        }
+        sheetUsoInsumos && sheetUsoInsumos.appendRow([
+          nombre,
+          it.fechaUsoInsumos || fecha,
+          '', // estado
+          it.insumo || '',
+          it.actividad || '',
+          obsRow,
+          correo
+        ]);
+>>>>>>> Stashed changes
+        break;
+      }
       case 'Solicitud de Reactivos':
         if (sheetReactivos) {
           sheetReactivos.appendRow([
@@ -368,6 +450,7 @@ function processSingleRequest_(ss, params) {
       }
       break;
     case 'Horas de Pasantía':
+<<<<<<< Updated upstream
       if (sheetHoras) {
         sheetHoras.appendRow([
           data.nombre,
@@ -377,6 +460,11 @@ function processSingleRequest_(ss, params) {
           data.correo
         ]);
       }
+=======
+      sheetHoras && sheetHoras.appendRow([
+        d.nombre, d.fechaPasantia, d.horas, d.observaciones, d.correo
+      ]);
+>>>>>>> Stashed changes
       break;
     case 'Profesores':
       if (sheetProfesores) {
@@ -394,6 +482,60 @@ function processSingleRequest_(ss, params) {
         ]);
       }
       break;
+    // Nueva nomenclatura para registro de uso
+    case 'Práctica de lab o Cátedra': {
+      // Esta categoría sustituye a "Profesores". Utiliza la fecha del formulario como
+      // fecha de inicio y fin; registra asignatura, horas y cédula.
+      const fecha = d.fecha;
+      sheetProfesores && sheetProfesores.appendRow([
+        d.nombre,
+        fecha,
+        d.asignatura || '',
+        fecha,      // fechaInicialProf (usamos la misma fecha)
+        fecha,      // fechaFinalProf (usamos la misma fecha)
+        d.horaInicialProf || '',
+        d.horaFinalProf || '',
+        d.cedula || '',
+        d.observaciones || '',
+        d.correo
+      ]);
+      break;
+    }
+    case 'Pasantías': {
+      // Esta categoría sustituye a "Horas de Pasantía". La fecha del formulario
+      // se interpreta como fecha de la pasantía. Se incluye la actividad realizada
+      // en las observaciones.
+      const obs = (d.actividadRealizada ? d.actividadRealizada : '') + (d.observaciones ? '; ' + d.observaciones : '');
+      sheetHoras && sheetHoras.appendRow([
+        d.nombre,
+        d.fecha,
+        d.horas || '',
+        obs,
+        d.correo
+      ]);
+      break;
+    }
+    case 'Tesis/Proyectos': {
+      // Esta categoría sustituye a "Uso de Laboratorio". Usa la fecha del formulario
+      // como fecha de uso de laboratorio y almacena la actividad realizada y tipo de persona.
+      // Además, incorpora la selección "Proyecto"/"Tesis" y el nombre del proyecto/tesis en las observaciones.
+      const obsDetalle = [];
+      // d.actividad corresponde a la selección "Proyecto" o "Tesis" (ru_actividadSelect)
+      if (d.actividad) obsDetalle.push('Tipo actividad: ' + d.actividad);
+      if (d.nombreProyecto) obsDetalle.push('Nombre: ' + d.nombreProyecto);
+      if (d.observaciones) obsDetalle.push(d.observaciones);
+      sheetUsoLab && sheetUsoLab.appendRow([
+        d.nombre,
+        d.fecha,
+        '',     // horaIngreso (no se solicita en este flujo)
+        '',     // horaSalida (no se solicita en este flujo)
+        d.actividadRealizada || '',
+        d.tipoActividadRealizada || '',
+        obsDetalle.join('; '),
+        d.correo
+      ]);
+      break;
+    }
     default:
       break;
   }

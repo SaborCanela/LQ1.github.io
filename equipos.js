@@ -16,8 +16,10 @@ const formRegistroDiv = document.getElementById('formRegistro');
 const solicitudRango  = document.getElementById('solicitudRango');
 const ocupacionInfo   = document.getElementById('ocupacionInfo');
 const registroFecha   = document.getElementById('registroFecha');
-const registroActividad = document.getElementById('registroActividad');
-const registroDescripcion = document.getElementById('registroDescripcion');
+// Nuevo grupo de actividad que se muestra para Solicitud y Registro
+const equipoActividadGroup = document.getElementById('equipoActividadGroup');
+const equipoActividad = document.getElementById('equipoActividad');
+const equipoDescripcion = document.getElementById('equipoDescripcion');
 const cancelStep2Btn  = document.getElementById('cancelStep2');
 const addEquipoBtn    = document.getElementById('addEquipoBtn');
 const finalizarEquipoBtn = document.getElementById('finalizarEquipoBtn');
@@ -36,8 +38,13 @@ let fpRegistro   = null;
 
 // Load list of equipos on load
 window.addEventListener('load', async () => {
-  const list = await getList('listEquipos');
-  equiposList.innerHTML = list.map(item => `<option value="${item}"></option>`).join('');
+  try {
+    const list = await getList('listEquipos');
+    equiposList.innerHTML = list.map(item => `<option value="${item}"></option>`).join('');
+  } catch (err) {
+    console.error('Error al cargar lista de equipos:', err);
+    equiposList.innerHTML = '';
+  }
 });
 
 // Navigation back to home
@@ -57,13 +64,22 @@ buscarEquipoBtn.addEventListener('click', () => {
 });
 
 // Reset step2 fields
+/**
+ * Restaura los campos del paso 2 sin borrar la selección de acción.
+ * Esto permite que al seleccionar "Solicitud" o "Registro" se mantenga
+ * el valor en el selector mientras se ocultan/limpian los formularios.
+ */
 function resetStep2() {
-  equipoAccionSel.value = '';
+  // No limpiar equipoAccionSel.value aquí; se limpia solo al cargar un nuevo equipo
   formSolicitudDiv.classList.add('hidden');
   formRegistroDiv.classList.add('hidden');
   ocupacionInfo.textContent = '';
   if (fpSolicitud) { fpSolicitud.clear(); }
   if (fpRegistro) { fpRegistro.clear(); }
+  // Limpiar campos de actividad
+  equipoActividad.value = '';
+  equipoDescripcion.value = '';
+  equipoActividadGroup.classList.add('hidden');
 }
 
 // Show step 2 for selected equipment
@@ -80,6 +96,8 @@ function showStep2(equipoName) {
   equipoImgEl.onerror = () => {
     equipoImgEl.src = 'placeholder_light_gray_block.png';
   };
+  // Al abrir un nuevo equipo, limpiar la selección y restablecer formularios
+  equipoAccionSel.value = '';
   resetStep2();
 }
 
@@ -88,6 +106,8 @@ equipoAccionSel.addEventListener('change', async () => {
   const action = equipoAccionSel.value;
   resetStep2();
   if (!action) return;
+  // Mostrar grupo de actividad para ambas acciones
+  equipoActividadGroup.classList.remove('hidden');
   if (action === 'Solicitud') {
     formSolicitudDiv.classList.remove('hidden');
     // Initialize flatpickr with range plugin
@@ -150,25 +170,31 @@ function processCurrentEquipo() {
       alert('Seleccione el rango de uso.');
       return false;
     }
-    const parts = rango.split(' a ');
-    // flatpickr in range mode sets string like "10/08/2024 to 12/08/2024" or with "to"; we need to handle multiple separators
     let fechas = rango.split(/\s*(?:to|a)\s*/);
     if (fechas.length < 2) {
       fechas = rango.split(' ');
     }
     const inicio = parseFechaEquipo(fechas[0]);
     const fin    = parseFechaEquipo(fechas[1] || fechas[0]);
+    const act = equipoActividad.value;
+    const desc = equipoDescripcion.value;
+    if (!act || !desc) {
+      alert('Seleccione la actividad y describa lo que se realizará.');
+      return false;
+    }
     cart.push({
       tipo: 'Solicitud de Equipos',
       equipo: currentEquipo,
       fechaInicial: inicio,
-      fechaFinal: fin
+      fechaFinal: fin,
+      actividad: act,
+      descripcion: desc
     });
   } else if (action === 'Registro') {
     const fechaUso = registroFecha.value;
-    const actividad = registroActividad.value;
-    const descripcion = registroDescripcion.value;
-    if (!fechaUso || !actividad || !descripcion) {
+    const act = equipoActividad.value;
+    const desc = equipoDescripcion.value;
+    if (!fechaUso || !act || !desc) {
       alert('Complete la fecha de uso, la actividad y la descripción.');
       return false;
     }
@@ -176,8 +202,8 @@ function processCurrentEquipo() {
       tipo: 'Uso de equipo',
       equipo: currentEquipo,
       fechaUsoEquipo: parseFechaEquipo(fechaUso),
-      nombreActividad: actividad,
-      observaciones: descripcion
+      actividad: act,
+      descripcion: desc
     });
   }
   return true;
@@ -191,9 +217,9 @@ function showStep3() {
   let html = '<ul>';
   cart.forEach((item, idx) => {
     if (item.tipo === 'Solicitud de Equipos') {
-      html += `<li><strong>${idx + 1}. ${item.equipo}</strong> – Solicitud (${formatDate(item.fechaInicial)} a ${formatDate(item.fechaFinal)})</li>`;
+      html += `<li><strong>${idx + 1}. ${item.equipo}</strong> – Solicitud (${formatDate(item.fechaInicial)} a ${formatDate(item.fechaFinal)}) – <em>${item.actividad}</em></li>`;
     } else {
-      html += `<li><strong>${idx + 1}. ${item.equipo}</strong> – Registro el ${formatDate(item.fechaUsoEquipo)} (${item.nombreActividad})</li>`;
+      html += `<li><strong>${idx + 1}. ${item.equipo}</strong> – Registro el ${formatDate(item.fechaUsoEquipo)} – <em>${item.actividad}</em></li>`;
     }
   });
   html += '</ul>';

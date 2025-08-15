@@ -39,8 +39,13 @@ let fpFechaGeneral = null;
 
 // Load reactivo list on load
 window.addEventListener('load', async () => {
-  const list = await getList('listReactivos');
-  reacList.innerHTML = list.map(item => `<option value="${item}"></option>`).join('');
+  try {
+    const list = await getList('listReactivos');
+    reacList.innerHTML = list.map(item => `<option value="${item}"></option>`).join('');
+  } catch (err) {
+    console.error('Error al cargar lista de reactivos:', err);
+    reacList.innerHTML = '';
+  }
 });
 
 // Go back home
@@ -60,7 +65,7 @@ buscarReactivoBtn.addEventListener('click', () => {
 });
 
 function resetReactivoStep2() {
-  reacAccionSel.value = '';
+  // No reiniciar reacAccionSel aquí para mantener la selección actual
   reacFormCommon.classList.add('hidden');
   reacFormSolicitud.classList.add('hidden');
   reacCantidad.value = '';
@@ -79,10 +84,12 @@ function showReactivoStep2(name) {
   reacStep2.classList.remove('hidden');
   reacNombreEl.textContent = name;
   const slug = slugify(name);
-  reacImgEl.src = `imagenes/reactivos/${slug}.jpg`;
+  reacImgEl.src = `imagenes/reactivos/${slug}.png`;
   reacImgEl.onerror = () => {
     reacImgEl.src = 'placeholder_light_gray_block.png';
   };
+  // Al seleccionar un nuevo reactivo, limpiar selección de acción y restablecer formularios
+  reacAccionSel.value = '';
   resetReactivoStep2();
 }
 

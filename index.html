@@ -20,8 +20,8 @@
       margin: 0;
       padding: 0;
       font-family: 'Inter', sans-serif;
-      /* Fondo tenue con degradado y textura */
-      background: linear-gradient(135deg, #e8f0fe 0%, #f5faff 100%);
+      /* Fondo con imagen difuminada para armonizar con el resto de páginas */
+      background: url('fondo.png') no-repeat center/cover fixed;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -35,7 +35,8 @@
       justify-content: space-between;
       align-items: center;
       padding: 0.75rem 1rem;
-      background: var(--bg-glass);
+      /* Vidrio translúcido similar a otras páginas */
+      background: rgba(255, 255, 255, 0.4);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       border-bottom: 1px solid rgba(255, 255, 255, 0.3);
@@ -98,6 +99,10 @@
       padding: 1rem;
       font-size: 0.85rem;
       color: #555;
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(255, 255, 255, 0.3);
     }
   </style>
 </head>
