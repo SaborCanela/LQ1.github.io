@@ -76,7 +76,7 @@ function showStep2(equipoName) {
   equipoNombreEl.textContent = equipoName;
   // Set image path using slug
   const slug = slugify(equipoName);
-  equipoImgEl.src = `imagenes/equipos/${slug}.jpg`;
+  equipoImgEl.src = `imagenes/equipos/${slug}.png`;
   equipoImgEl.onerror = () => {
     equipoImgEl.src = 'placeholder_light_gray_block.png';
   };
