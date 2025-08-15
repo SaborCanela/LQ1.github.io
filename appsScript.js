@@ -1,27 +1,118 @@
-/**
- * appsScript.js
- *
- * Este script es una versión refactorizada del archivo de Google Apps
- * Script utilizado para procesar las solicitudes provenientes del
- * frontend.  Soporta tanto el flujo tradicional de un único envío
- * como un nuevo modo de envío múltiple en el que se reciben varios
- * ítems en una sola operación.  Además, envía correos de confirmación
- * al usuario y al administrador, adjuntando archivos cuando se trata
- * de solicitudes de reactivos controlados.
- */
+/************************************************************
+ * appsScript.js — LQ1D (armonizado)
+ * - Config centralizada (IDs / correos / carpeta Drive)
+ * - doPost: soporta único y múltiple (items)
+ * - doGet: listas y disponibilidad de equipos
+ * - Adjuntos en Drive + correos (usuario/admin)
+ ************************************************************/
 
+// =================== CONFIGURACIÓN =========================
+const ADMIN_EMAIL     = 'thomas.garzon@ikiam.edu.ec';   // <-- cambia aquí
+const DRIVE_FOLDER_ID = '1cjvkCphJWlL_BRXp2YcyckD-QOfZQCZ-';   // <-- cambia aquí
+
+// Hoja “general” donde están las pestañas de registros (Solicitud de Equipos, Uso de equipo, etc.)
+const SS_GENERAL_ID   = '14x0fat7x18QlAN9kKYgNYJkAvw0L1OkyEAS0yLukR5Q';    // <-- cambia aquí
+
+// Hojas de catálogos para las listas de autocompletado.
+// Si todo vive en la misma hoja, puedes repetir SS_GENERAL_ID aquí.
+const SS_EQUIPOS_ID   = '1VYnN1yNZi5UWez8frYHOH8dFC1iicV75wAa0Hcm5LuA';   // <-- cambia aquí (o repite SS_GENERAL_ID)
+const SS_REACTIVOS_ID = '1EKfr1vbmpyUbgKMVbv6_lL4FuIxlPpLOaFhEeZEApSo'; // <-- cambia aquí (o repite SS_GENERAL_ID)
+const SS_INSUMOS_ID   = '1xX56wX8DfJhyUXpi9lUBN78cQqhuEnLIPaO8ZdKlrrY';   // <-- cambia aquí (o repite SS_GENERAL_ID)
+
+// =================== ENTRYPOINTS ===========================
 function doPost(e) {
-  const ss = SpreadsheetApp.openById('14x0fat7x18QlAN9kKYgNYJkAvw0L1OkyEAS0yLukR5Q');
-  const params = e.parameter;
+  const ss = SpreadsheetApp.openById(SS_GENERAL_ID);
+  const params = e.parameter || {};
   if (params.items) {
     return processMultiRequest_(ss, params);
   }
   return processSingleRequest_(ss, params);
 }
 
+function doGet(e) {
+  const sheetEquiposData   = SpreadsheetApp.openById(SS_EQUIPOS_ID).getSheetByName('Equipos');
+  const sheetReactivosData = SpreadsheetApp.openById(SS_REACTIVOS_ID).getSheetByName('Reactivos');
+  const sheetInsumosData   = SpreadsheetApp.openById(SS_INSUMOS_ID).getSheetByName('Insumos');
+  const ssGeneral          = SpreadsheetApp.openById(SS_GENERAL_ID);
+
+  const action = (e.parameter && e.parameter.action) || '';
+  const q      = ((e.parameter && e.parameter.q) || '').toString().toLowerCase();
+
+  function filterList(list) {
+    if (!q) return list;
+    return list.filter(item => item.toString().toLowerCase().includes(q));
+  }
+
+  let output;
+  switch (action) {
+    case 'listReactivos':
+      output = filterList(getColumnValues_(sheetReactivosData, 1));
+      break;
+    case 'listInsumos':
+      output = filterList(getColumnValues_(sheetInsumosData, 1));
+      break;
+    case 'listEquipos':
+      output = filterList(getColumnValues_(sheetEquiposData, 1));
+      break;
+    case 'availEquipos': {
+      const start = e.parameter.start;
+      const end   = e.parameter.end;
+      output = filterList(getAvailableEquipos_(sheetEquiposData, ssGeneral, start, end));
+      break;
+    }
+    case 'busyEquipos': {
+      const equipo = e.parameter.equipo;
+      output = getBusyEquipos_(ssGeneral, equipo);
+      break;
+    }
+    default:
+      output = { error: 'Acción no reconocida' };
+  }
+  return ContentService
+    .createTextOutput(JSON.stringify(output))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// =================== HELPERS doGet =========================
+function getColumnValues_(sheet, col) {
+  if (!sheet) return [];
+  const last = sheet.getLastRow();
+  if (last < 2) return [];
+  const data = sheet.getRange(2, col, last - 1).getValues();
+  return data.flat().filter(String);
+}
+
+function getAvailableEquipos_(sheetEquiposData, ssGeneral, start, end) {
+  const all = getColumnValues_(sheetEquiposData, 1);
+  const bookings = (ssGeneral.getSheetByName('Solicitud de Equipos') || { getDataRange(){return{getValues(){return[]}}; } })
+    .getDataRange().getValues().slice(1)
+    .map(r => ({ equipo: r[2], from: new Date(r[3]), to: new Date(r[4]) }));
+
+  const startDate = start ? new Date(start) : null;
+  const endDate   = end   ? new Date(end)   : null;
+  if (!startDate || !endDate) return all;
+
+  const ocupados = bookings
+    .filter(b => !(b.to < startDate || b.from > endDate))
+    .map(b => b.equipo);
+
+  return all.filter(e => !ocupados.includes(e));
+}
+
+function getBusyEquipos_(ssGeneral, equipo) {
+  const tz = Session.getScriptTimeZone();
+  const data = (ssGeneral.getSheetByName('Solicitud de Equipos') || { getDataRange(){return{getValues(){return[]}}; } })
+    .getDataRange().getValues().slice(1);
+  return data
+    .filter(r => r[2] === equipo)
+    .map(r => ({
+      from: Utilities.formatDate(new Date(r[3]), tz, 'yyyy-MM-dd'),
+      to:   Utilities.formatDate(new Date(r[4]), tz, 'yyyy-MM-dd')
+    }));
+}
+
+// =================== doPost: MULTI =========================
 function processMultiRequest_(ss, params) {
-  const ADMIN_EMAIL = 'thomas.garzon@ikiam.edu.ec';
-  const DRIVE_FOLDER_ID = '1W--folderId'; // Reemplace con la ID de la carpeta en Drive donde guardar adjuntos
   const sheetResumen     = ss.getSheetByName('Resumen general');
   const sheetEquipos     = ss.getSheetByName('Solicitud de Equipos');
   const sheetUsoEquipo   = ss.getSheetByName('Uso de equipo');
@@ -29,32 +120,26 @@ function processMultiRequest_(ss, params) {
   const sheetUsoInsumos  = ss.getSheetByName('Uso de Insumos');
   const sheetReactivos   = ss.getSheetByName('Solicitud de Reactivos');
   const sheetUsoReactivo = ss.getSheetByName('Uso de Reactivo');
-  // Parsear lista de ítems
-  var items;
+
+  // Parse items[]
+  let items = [];
   try {
     items = JSON.parse(params.items);
     if (!Array.isArray(items)) items = [];
-  } catch (err) {
-    items = [];
-  }
-  var nombre  = params.nombre || '';
-  var correo  = params.correo || '';
-  var fecha   = params.fecha || Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
-  var obs     = params.observaciones || '';
-  var tipoActividad = params.tipoActividad || '';
-  var nombreActividad = params.nombreActividad || '';
-  var tipoSolicitud  = params.tipo || '';
-  // Decodificar archivo adjunto
-  var file = null;
-  if (params.fileBase64) {
-    var blob = Utilities.newBlob(Utilities.base64Decode(params.fileBase64), MimeType.PDF, params.fileName || 'adjunto.pdf');
-    try {
-      var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
-      file = folder.createFile(blob);
-    } catch (err) {
-      file = null;
-    }
-  }
+  } catch (_) { items = []; }
+
+  const nombre           = params.nombre || '';
+  const correo           = params.correo || '';
+  const tz               = Session.getScriptTimeZone();
+  const fecha            = params.fecha || Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const observaciones    = params.observaciones || '';
+  const tipoActividad    = params.tipoActividad || '';
+  const nombreActividad  = params.nombreActividad || '';
+  const tipoSolicitud    = params.tipo || '';
+
+  // Guardar adjunto (si viene)
+  const file = handleAttachment_(params); // puede devolver null
+
   // Resumen general
   if (sheetResumen) {
     sheetResumen.appendRow([
@@ -62,66 +147,10 @@ function processMultiRequest_(ss, params) {
       correo,
       fecha,
       tipoSolicitud || 'Múltiple',
-      obs,
+      observaciones,
       'Total items: ' + items.length
     ]);
   }
-<<<<<<< Updated upstream
-  // Registrar cada ítem
-  items.forEach(function(item) {
-    var t = item.tipo || '';
-    switch (t) {
-      case 'Solicitud de Equipos':
-        if (sheetEquipos) {
-          sheetEquipos.appendRow([
-            nombre,
-            fecha,
-            item.equipo || '',
-            item.fechaInicial || '',
-            item.fechaFinal || '',
-            obs,
-            correo
-          ]);
-        }
-        break;
-      case 'Uso de equipo':
-        if (sheetUsoEquipo) {
-          sheetUsoEquipo.appendRow([
-            nombre,
-            item.fechaUsoEquipo || fecha,
-            item.equipo || '',
-            item.nombreActividad || '',
-            obs,
-            correo
-          ]);
-        }
-        break;
-      case 'Solicitud de Insumos':
-        if (sheetInsumos) {
-          sheetInsumos.appendRow([
-            nombre,
-            item.fechaSolicitudInsumos || fecha,
-            '',
-            item.insumo || '',
-            item.fechaDevolucion || '',
-            'Cantidad: ' + (item.cantidad || '') + '; ' + obs,
-            correo
-          ]);
-        }
-        break;
-      case 'Uso de Insumos':
-        if (sheetUsoInsumos) {
-          sheetUsoInsumos.appendRow([
-            nombre,
-            item.fechaUsoInsumos || fecha,
-            '',
-            item.insumo || '',
-            item.nombreActividad || '',
-            'Cantidad: ' + (item.cantidad || '') + '; ' + obs,
-            correo
-          ]);
-        }
-=======
 
   // Registrar ítem por ítem
   items.forEach(it => {
@@ -200,74 +229,48 @@ function processMultiRequest_(ss, params) {
           obsRow,
           correo
         ]);
->>>>>>> Stashed changes
         break;
       }
       case 'Solicitud de Reactivos':
-        if (sheetReactivos) {
-          sheetReactivos.appendRow([
-            nombre,
-            fecha,
-            item.reactivo || '',
-            item.cantidad || '',
-            item.laboratorioDestino || '',
-            tipoActividad,
-            obs + (item.controlado ? '; Controlado' : ''),
-            correo
-          ]);
-        }
+        sheetReactivos && sheetReactivos.appendRow([
+          nombre,
+          fecha,
+          it.reactivo || '',
+          it.cantidad || '',
+          it.laboratorioDestino || '',
+          tipoActividad,
+          observaciones + (it.controlado ? '; Controlado' : ''),
+          correo
+        ]);
         break;
       case 'Uso de Reactivo':
-        if (sheetUsoReactivo) {
-          sheetUsoReactivo.appendRow([
-            nombre,
-            fecha,
-            item.reactivo || '',
-            item.cantidad || '',
-            tipoActividad,
-            obs + (item.controlado ? '; Controlado' : ''),
-            correo
-          ]);
-        }
+        sheetUsoReactivo && sheetUsoReactivo.appendRow([
+          nombre,
+          fecha,
+          it.reactivo || '',
+          it.cantidad || '',
+          tipoActividad,
+          observaciones + (it.controlado ? '; Controlado' : ''),
+          correo
+        ]);
         break;
       default:
+        // ignorar tipos desconocidos
         break;
     }
   });
-  // Construir correo HTML
-  var body = '<p>Estimado/a ' + nombre + ',</p>';
-  body += '<p>Su solicitud/registro se ha recibido con los siguientes detalles:</p>';
-  body += '<ul>';
-  items.forEach(function(it) {
-    if (it.tipo === 'Solicitud de Equipos') {
-      body += '<li>Equipo: ' + it.equipo + ' – Solicitud (' + it.fechaInicial + ' a ' + it.fechaFinal + ')</li>';
-    } else if (it.tipo === 'Uso de equipo') {
-      body += '<li>Equipo: ' + it.equipo + ' – Uso el ' + it.fechaUsoEquipo + ', ' + it.nombreActividad + '</li>';
-    } else if (it.tipo === 'Solicitud de Insumos') {
-      body += '<li>Material: ' + it.insumo + ' – Solicitud (' + it.fechaSolicitudInsumos + ' a ' + it.fechaDevolucion + '), Cantidad: ' + it.cantidad + '</li>';
-    } else if (it.tipo === 'Uso de Insumos') {
-      body += '<li>Material: ' + it.insumo + ' – Uso el ' + it.fechaUsoInsumos + ', ' + it.nombreActividad + ', Cantidad: ' + it.cantidad + '</li>';
-    } else if (it.tipo === 'Solicitud de Reactivos') {
-      body += '<li>Reactivo: ' + it.reactivo + ' – Solicitud, Cantidad: ' + it.cantidad + ', Destino: ' + it.laboratorioDestino + '</li>';
-    } else if (it.tipo === 'Uso de Reactivo') {
-      body += '<li>Reactivo: ' + it.reactivo + ' – Uso, Cantidad: ' + it.cantidad + '</li>';
-    }
-  });
-  body += '</ul>';
-  if (tipoActividad) body += '<p>Tipo de actividad: ' + tipoActividad + '</p>';
-  if (nombreActividad) body += '<p>Nombre de la actividad: ' + nombreActividad + '</p>';
-  if (obs) body += '<p>Observaciones: ' + obs + '</p>';
-  body += '<p>Gracias.</p>';
-  // Enviar correos
-  MailApp.sendEmail({ to: correo, subject: 'Confirmación de registro LQ1D', htmlBody: body });
-  var adminOpts = { to: ADMIN_EMAIL, subject: 'Nueva solicitud/registro LQ1D', htmlBody: body };
-  if (file) adminOpts.attachments = [ file.getAs(file.getMimeType()) ];
-  MailApp.sendEmail(adminOpts);
-  return ContentService.createTextOutput('¡Registro guardado!').setMimeType(ContentService.MimeType.TEXT_PLAIN);
+
+  // Emails: usuario (sin adjuntos) y admin (con adjunto si existe)
+  sendEmails_( { nombre, correo, tipo: tipoSolicitud, tipoActividad, nombreActividad, observaciones, fecha },
+               items, file );
+
+  return ContentService.createTextOutput('¡Registro guardado!')
+                       .setMimeType(ContentService.MimeType.TEXT_PLAIN);
 }
 
+// =================== doPost: ÚNICO =========================
 function processSingleRequest_(ss, params) {
-  const tipo = params.tipo || '';
+  const tipo              = params.tipo || '';
   const sheetResumen      = ss.getSheetByName('Resumen general');
   const sheetReactivos    = ss.getSheetByName('Solicitud de Reactivos');
   const sheetInsumos      = ss.getSheetByName('Solicitud de Insumos');
@@ -279,208 +282,131 @@ function processSingleRequest_(ss, params) {
   const sheetUsoLab       = ss.getSheetByName('Uso de Laboratorio');
   const sheetHoras        = ss.getSheetByName('Horas de Pasantía');
   const sheetProfesores   = ss.getSheetByName('Profesores');
-  const now = new Date();
+
   const tz  = Session.getScriptTimeZone();
-  const fechaEnvio = Utilities.formatDate(now, tz, 'yyyy-MM-dd');
-  const data = {
-    nombre:               params.nombre                || '',
-    correo:               params.correo                || '',
-    fecha:                params.fecha || fechaEnvio,
+  const fechaEnvio = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+
+  const d = {
+    nombre:                 params.nombre                || '',
+    correo:                 params.correo                || '',
+    fecha:                  params.fecha || fechaEnvio,
+    // Reactivos
     fechaSolicitudReactivo: params.fechaSolicitudReactivo || '',
-    reactivo:             params.reactivo              || '',
-    cantidad:             params.cantidad              || '',
-    unidad:               params.unidad                || '',
-    laboratorioDestino:   params.laboratorioDestino    || '',
-    tipoActividad:        params.tipoActividad         || '',
-    fechaSolicitudInsumos: params.fechaSolicitudInsumos  || '',
-    estado:               params.estado                || '',
-    insumo:               params.insumo                || '',
-    fechaDevolucion:      params.fechaDevolucion       || '',
-    equipo:               params.equipo                || '',
-    fechaInicial:         params.fechaInicial          || '',
-    fechaFinal:           params.fechaFinal            || '',
-    descripcion:          params.descripcion           || '',
-    fechaUsoReactivo:     params.fechaUsoReactivo      || '',
-    fechaUsoInsumos:      params.fechaUsoInsumos       || '',
-    nombreActividad:      params.nombreActividad       || '',
-    fechaUsoEquipo:       params.fechaUsoEquipo        || '',
-    fechaUsoLab:          params.fechaUsoLab           || '',
-    horaIngreso:          params.horaIngreso           || '',
-    horaSalida:           params.horaSalida            || '',
-    actividadRealizada:   params.actividadRealizada    || '',
-    tipoActividadRealizada: params.tipoActividadRealizada || '',
-    horas:                params.horas                 || '',
-    fechaPasantia:        params.fechaPasantia         || '',
-    asignatura:           params.asignatura            || '',
-    fechaInicialProf:     params.fechaInicialProf      || '',
-    fechaFinalProf:       params.fechaFinalProf        || '',
-    horaInicialProf:      params.horaInicialProf       || '',
-    horaFinalProf:        params.horaFinalProf         || '',
-    cedula:               params.cedula                || '',
-    observaciones:        params.observaciones         || '',
-    nombreProyecto:       params.nombreProyecto        || ''
+    reactivo:               params.reactivo              || '',
+    cantidad:               params.cantidad              || '',
+    unidad:                 params.unidad                || '',
+    laboratorioDestino:     params.laboratorioDestino    || '',
+    tipoActividad:          params.tipoActividad         || '',
+    // Insumos
+    fechaSolicitudInsumos:  params.fechaSolicitudInsumos  || '',
+    estado:                 params.estado                || '',
+    insumo:                 params.insumo                || '',
+    fechaDevolucion:        params.fechaDevolucion       || '',
+    // Equipos
+    equipo:                 params.equipo                || '',
+    fechaInicial:           params.fechaInicial          || '',
+    fechaFinal:             params.fechaFinal            || '',
+    // Almacenamiento
+    descripcion:            params.descripcion           || '',
+    // Uso Reactivo / Insumo / Equipo
+    fechaUsoReactivo:       params.fechaUsoReactivo      || '',
+    fechaUsoInsumos:        params.fechaUsoInsumos       || '',
+    nombreActividad:        params.nombreActividad       || '',
+    fechaUsoEquipo:         params.fechaUsoEquipo        || '',
+    // Uso de Laboratorio
+    fechaUsoLab:            params.fechaUsoLab           || '',
+    horaIngreso:            params.horaIngreso           || '',
+    horaSalida:             params.horaSalida            || '',
+    actividadRealizada:     params.actividadRealizada    || '',
+    tipoActividadRealizada: params.tipoActividadRealizada|| '',
+    // Pasantías / Profesores
+    horas:                  params.horas                 || '',
+    fechaPasantia:          params.fechaPasantia         || '',
+    asignatura:             params.asignatura            || '',
+    fechaInicialProf:       params.fechaInicialProf      || '',
+    fechaFinalProf:         params.fechaFinalProf        || '',
+    horaInicialProf:        params.horaInicialProf       || '',
+    horaFinalProf:          params.horaFinalProf         || '',
+    cedula:                 params.cedula                || '',
+    // Observaciones y proyecto/tesis/práctica
+    observaciones:          params.observaciones         || '',
+    nombreProyecto:         params.nombreProyecto        || ''
   };
-  var cantidadCompleta = data.cantidad;
-  if (data.cantidad && data.unidad) {
-    cantidadCompleta = data.cantidad + ' ' + data.unidad;
+
+  // cantidad completa (x unidad)
+  const cantidadCompleta = (d.cantidad && d.unidad) ? (d.cantidad + ' ' + d.unidad) : d.cantidad;
+
+  // descripción para Resumen general
+  const descGeneral = d.reactivo || d.insumo || d.equipo || d.descripcion || d.actividadRealizada || '';
+
+  // anexar nombre de proyecto/tesis/práctica a observaciones
+  if (d.nombreProyecto) {
+    const detalle = 'Nombre del proyecto/tesis/práctica: ' + d.nombreProyecto;
+    d.observaciones = d.observaciones ? (d.observaciones + '; ' + detalle) : detalle;
   }
-  var descripcionGeneral = data.reactivo || data.insumo || data.equipo || data.descripcion || data.actividadRealizada || '';
-  if (data.nombreProyecto) {
-    var detalle = 'Nombre del proyecto/tesis/práctica: ' + data.nombreProyecto;
-    if (data.observaciones) {
-      data.observaciones = data.observaciones + '; ' + detalle;
-    } else {
-      data.observaciones = detalle;
-    }
-  }
-  if (sheetResumen) {
-    sheetResumen.appendRow([
-      data.nombre,
-      data.correo,
-      data.fecha,
-      tipo,
-      data.observaciones,
-      descripcionGeneral
-    ]);
-  }
+
+  // Resumen general
+  sheetResumen && sheetResumen.appendRow([
+    d.nombre, d.correo, d.fecha, tipo, d.observaciones, descGeneral
+  ]);
+
+  // Escribir en hoja específica
   switch (tipo) {
     case 'Solicitud de Reactivos':
-      if (sheetReactivos) {
-        sheetReactivos.appendRow([
-          data.nombre,
-          data.fechaSolicitudReactivo,
-          data.reactivo,
-          cantidadCompleta,
-          data.laboratorioDestino,
-          data.tipoActividad,
-          data.observaciones,
-          data.correo
-        ]);
-      }
+      sheetReactivos && sheetReactivos.appendRow([
+        d.nombre, d.fechaSolicitudReactivo, d.reactivo, cantidadCompleta,
+        d.laboratorioDestino, d.tipoActividad, d.observaciones, d.correo
+      ]);
       break;
     case 'Solicitud de Insumos':
-      if (sheetInsumos) {
-        sheetInsumos.appendRow([
-          data.nombre,
-          data.fechaSolicitudInsumos,
-          data.estado,
-          data.insumo,
-          data.fechaDevolucion,
-          data.observaciones,
-          data.correo
-        ]);
-      }
+      sheetInsumos && sheetInsumos.appendRow([
+        d.nombre, d.fechaSolicitudInsumos, d.estado, d.insumo,
+        d.fechaDevolucion, d.observaciones, d.correo
+      ]);
       break;
     case 'Solicitud de Equipos':
-      if (sheetEquipos) {
-        sheetEquipos.appendRow([
-          data.nombre,
-          data.fecha,
-          data.equipo,
-          data.fechaInicial,
-          data.fechaFinal,
-          data.observaciones,
-          data.correo
-        ]);
-      }
+      sheetEquipos && sheetEquipos.appendRow([
+        d.nombre, d.fecha, d.equipo, d.fechaInicial, d.fechaFinal, d.observaciones, d.correo
+      ]);
       break;
     case 'Solicitud de Almacenamiento':
-      if (sheetAlmacen) {
-        sheetAlmacen.appendRow([
-          data.nombre,
-          data.fecha,
-          data.descripcion,
-          data.fechaInicial,
-          data.fechaFinal,
-          data.observaciones,
-          data.correo
-        ]);
-      }
+      sheetAlmacen && sheetAlmacen.appendRow([
+        d.nombre, d.fecha, d.descripcion, d.fechaInicial, d.fechaFinal, d.observaciones, d.correo
+      ]);
       break;
     case 'Uso de Reactivo':
-      if (sheetUsoReactivo) {
-        sheetUsoReactivo.appendRow([
-          data.nombre,
-          data.fechaUsoReactivo,
-          data.reactivo,
-          cantidadCompleta,
-          data.tipoActividad,
-          data.observaciones,
-          data.correo
-        ]);
-      }
+      sheetUsoReactivo && sheetUsoReactivo.appendRow([
+        d.nombre, d.fechaUsoReactivo, d.reactivo, cantidadCompleta,
+        d.tipoActividad, d.observaciones, d.correo
+      ]);
       break;
     case 'Uso de Insumos':
-      if (sheetUsoInsumos) {
-        sheetUsoInsumos.appendRow([
-          data.nombre,
-          data.fechaUsoInsumos,
-          data.estado,
-          data.insumo,
-          data.nombreActividad,
-          data.observaciones,
-          data.correo
-        ]);
-      }
+      sheetUsoInsumos && sheetUsoInsumos.appendRow([
+        d.nombre, d.fechaUsoInsumos, d.estado, d.insumo,
+        d.nombreActividad, d.observaciones, d.correo
+      ]);
       break;
     case 'Uso de equipo':
-      if (sheetUsoEquipo) {
-        sheetUsoEquipo.appendRow([
-          data.nombre,
-          data.fechaUsoEquipo,
-          data.equipo,
-          data.nombreActividad,
-          data.observaciones,
-          data.correo
-        ]);
-      }
+      sheetUsoEquipo && sheetUsoEquipo.appendRow([
+        d.nombre, d.fechaUsoEquipo, d.equipo, d.nombreActividad, d.observaciones, d.correo
+      ]);
       break;
     case 'Uso de Laboratorio':
-      if (sheetUsoLab) {
-        sheetUsoLab.appendRow([
-          data.nombre,
-          data.fechaUsoLab,
-          data.horaIngreso,
-          data.horaSalida,
-          data.actividadRealizada,
-          data.tipoActividadRealizada,
-          data.observaciones,
-          data.correo
-        ]);
-      }
+      sheetUsoLab && sheetUsoLab.appendRow([
+        d.nombre, d.fechaUsoLab, d.horaIngreso, d.horaSalida,
+        d.actividadRealizada, d.tipoActividadRealizada, d.observaciones, d.correo
+      ]);
       break;
     case 'Horas de Pasantía':
-<<<<<<< Updated upstream
-      if (sheetHoras) {
-        sheetHoras.appendRow([
-          data.nombre,
-          data.fechaPasantia,
-          data.horas,
-          data.observaciones,
-          data.correo
-        ]);
-      }
-=======
       sheetHoras && sheetHoras.appendRow([
         d.nombre, d.fechaPasantia, d.horas, d.observaciones, d.correo
       ]);
->>>>>>> Stashed changes
       break;
     case 'Profesores':
-      if (sheetProfesores) {
-        sheetProfesores.appendRow([
-          data.nombre,
-          data.fecha,
-          data.asignatura,
-          data.fechaInicialProf,
-          data.fechaFinalProf,
-          data.horaInicialProf,
-          data.horaFinalProf,
-          data.cedula,
-          data.observaciones,
-          data.correo
-        ]);
-      }
+      sheetProfesores && sheetProfesores.appendRow([
+        d.nombre, d.fecha, d.asignatura, d.fechaInicialProf, d.fechaFinalProf,
+        d.horaInicialProf, d.horaFinalProf, d.cedula, d.observaciones, d.correo
+      ]);
       break;
     // Nueva nomenclatura para registro de uso
     case 'Práctica de lab o Cátedra': {
@@ -537,7 +463,65 @@ function processSingleRequest_(ss, params) {
       break;
     }
     default:
+      // noop
       break;
   }
-  return ContentService.createTextOutput('¡Registro guardado!').setMimeType(ContentService.MimeType.TEXT_PLAIN);
+
+  // Adjuntos (si viene en single) + correos
+  const file = handleAttachment_(params);
+  sendEmails_( { nombre: d.nombre, correo: d.correo, tipo, tipoActividad: d.tipoActividad,
+                 nombreActividad: d.nombreActividad, observaciones: d.observaciones, fecha: d.fecha },
+               [params], file );
+
+  return ContentService.createTextOutput('¡Registro guardado!')
+                       .setMimeType(ContentService.MimeType.TEXT_PLAIN);
+}
+
+// =================== ARCHIVOS ===============================
+function handleAttachment_(params) {
+  if (!params.fileBase64) return null;
+  const mime = params.fileMimeType || MimeType.PDF;
+  const blob = Utilities.newBlob(Utilities.base64Decode(params.fileBase64), mime, params.fileName || 'adjunto');
+  try {
+    const folder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+    return folder.createFile(blob);
+  } catch (err) {
+    return null;
+  }
+}
+
+// =================== EMAILS ================================
+function sendEmails_(payload, items, file) {
+  const asunto = `[LQ1D] ${payload.tipo || 'Registro'} – ${payload.nombre || ''}`;
+  const html = renderEmailHtml_(payload, items);
+
+  // Usuario (sin adjuntos)
+  if (payload.correo) {
+    MailApp.sendEmail({ to: payload.correo, subject: asunto, htmlBody: html });
+  }
+  // Admin (con adjunto si existe)
+  const opts = { to: ADMIN_EMAIL, subject: asunto, htmlBody: html };
+  if (file) opts.attachments = [file.getAs(file.getMimeType())];
+  MailApp.sendEmail(opts);
+}
+
+function renderEmailHtml_(payload, items) {
+  let html = `<p>Hola ${sanitize_(payload.nombre || '')},</p>`;
+  html += `<p>Se registró la siguiente información:</p><ul>`;
+  (items || []).forEach(it => {
+    const kv = Object.entries(it)
+      .map(([k, v]) => `<strong>${sanitize_(k)}:</strong> ${sanitize_(v)}`)
+      .join('<br>');
+    html += `<li>${kv}</li><br>`;
+  });
+  if (payload.tipoActividad)    html += `<p><strong>Tipo de actividad:</strong> ${sanitize_(payload.tipoActividad)}</p>`;
+  if (payload.nombreActividad)  html += `<p><strong>Nombre de la actividad:</strong> ${sanitize_(payload.nombreActividad)}</p>`;
+  if (payload.observaciones)    html += `<p><strong>Observaciones:</strong> ${sanitize_(payload.observaciones)}</p>`;
+  if (payload.fecha)            html += `<p><strong>Fecha:</strong> ${sanitize_(payload.fecha)}</p>`;
+  html += `<p>Saludos,<br>Laboratorio de Química 1 de Docencia</p>`;
+  return html;
+}
+
+function sanitize_(s) {
+  return String(s || '').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
 }
