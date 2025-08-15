@@ -104,6 +104,37 @@
       -webkit-backdrop-filter: blur(10px);
       border-top: 1px solid rgba(255, 255, 255, 0.3);
     }
+
+    /* Aviso emergente */
+    .aviso {
+      width: 100%;
+      max-width: 700px;
+      margin: 1rem auto;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .aviso-content {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .aviso-icon {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+    }
+    .aviso-cerrar {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #333;
+      margin-left: auto;
+    }
   </style>
 </head>
 <body>
@@ -125,10 +156,33 @@
       <a href="reactivos.html">Reactivos</a>
     </nav>
   </main>
+  <!-- Aviso emergente -->
+  <div id="aviso" class="aviso">
+    <div class="aviso-content">
+      <img src="aviso_icon.png" alt="Icono de aviso" class="aviso-icon" loading="lazy">
+      <p id="avisoTexto">Bienvenido a la pagina web del lab LQ1!!!! Ten paciencia, el servidor va por su primera versión.</p>
+      <button id="avisoCerrar" class="aviso-cerrar" aria-label="Cerrar aviso">×</button>
+    </div>
+  </div>
   <footer>
     <p><strong>Contacto:</strong> thomas.garzon@ikiam.edu.ec</p>
     <p><strong>Teléfono:</strong> 0959546317</p>
     <p><strong>Ubicación:</strong> Laboratorio Química 1 de Docencia – Tena, Ecuador</p>
   </footer>
+  <script>
+    // Muestra u oculta el aviso según si ya fue cerrado en la sesión
+    (function() {
+      const avisoEl = document.getElementById('aviso');
+      const avisoCerrar = document.getElementById('avisoCerrar');
+      // Comprueba si el aviso se ha cerrado anteriormente
+      if (sessionStorage.getItem('avisoCerrado')) {
+        avisoEl.style.display = 'none';
+      }
+      avisoCerrar.addEventListener('click', () => {
+        avisoEl.style.display = 'none';
+        sessionStorage.setItem('avisoCerrado', '1');
+      });
+    })();
+  </script>
 </body>
 </html>
