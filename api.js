@@ -14,7 +14,7 @@
  * parte del FormData.
  */
 
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwjqcq73Wsl5mNyXDP_sm6kXKy-thQNCbP-fJtg8mlbByIcbbRiUpCjWSjtZQY1SoSNGA/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwMzgegcn1qau1ssUUIpVlrPDNEwBGJXha-NRutHuohBk7ORzymco2Mp-FEu_w2SlyYHA/exec';
 
 // TTL para las listas en milisegundos (12 horas)
 const TTL_MS = 12 * 60 * 60 * 1000;

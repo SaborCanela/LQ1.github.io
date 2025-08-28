@@ -17,6 +17,8 @@ const matRango    = document.getElementById('matRango');
 const matCantidadSol = document.getElementById('matCantidadSol');
 const matFechaUso = document.getElementById('matFechaUso');
 const matCantidadReg = document.getElementById('matCantidadReg');
+// Grupo de actividad para ambas acciones
+const matActividadGroup = document.getElementById('matActividadGroup');
 const matActividad  = document.getElementById('matActividad');
 const matDescripcion= document.getElementById('matDescripcion');
 const matCancelStep2 = document.getElementById('matCancelStep2');
@@ -36,8 +38,13 @@ let fpMatRegistro  = null;
 
 // Load material list on load
 window.addEventListener('load', async () => {
-  const list = await getList('listInsumos');
-  materialList.innerHTML = list.map(item => `<option value="${item}"></option>`).join('');
+  try {
+    const list = await getList('listInsumos');
+    materialList.innerHTML = list.map(item => `<option value="${item}"></option>`).join('');
+  } catch (err) {
+    console.error('Error al cargar lista de materiales:', err);
+    materialList.innerHTML = '';
+  }
 });
 
 // Back to home
@@ -57,15 +64,17 @@ buscarMaterialBtn.addEventListener('click', () => {
 });
 
 function resetMatStep2() {
-  matAccionSel.value = '';
+  // No reiniciar matAccionSel aquí para mantener la selección actual
   matFormSolicitud.classList.add('hidden');
   matFormRegistro.classList.add('hidden');
   if (fpMatSolicitud) fpMatSolicitud.clear();
   if (fpMatRegistro) fpMatRegistro.clear();
   matCantidadSol.value = '';
   matCantidadReg.value = '';
+  // Limpiar y ocultar actividad y descripción
   matActividad.value = '';
   matDescripcion.value = '';
+  matActividadGroup.classList.add('hidden');
 }
 
 function showMaterialStep2(name) {
@@ -78,6 +87,8 @@ function showMaterialStep2(name) {
   matImgEl.onerror = () => {
     matImgEl.src = 'placeholder_light_gray_block.png';
   };
+  // Al abrir un nuevo material, limpiar la selección de acción y restablecer formularios
+  matAccionSel.value = '';
   resetMatStep2();
 }
 
@@ -86,6 +97,8 @@ matAccionSel.addEventListener('change', () => {
   resetMatStep2();
   const action = matAccionSel.value;
   if (!action) return;
+  // Mostrar grupo de actividad para ambas acciones
+  matActividadGroup.classList.remove('hidden');
   if (action === 'Solicitud') {
     matFormSolicitud.classList.remove('hidden');
     fpMatSolicitud = flatpickr(matRango, { mode: 'range', dateFormat: 'd/m/Y' });
@@ -125,8 +138,10 @@ function processMaterial() {
   if (action === 'Solicitud') {
     const rango = matRango.value;
     const cantidad = matCantidadSol.value;
-    if (!rango || !cantidad) {
-      alert('Seleccione un rango de fechas y la cantidad.');
+    const act = matActividad.value;
+    const desc = matDescripcion.value;
+    if (!rango || !cantidad || !act || !desc) {
+      alert('Seleccione un rango de fechas, la cantidad, la actividad y describa lo que se realizará.');
       return false;
     }
     let fechas = rango.split(/\s*(?:to|a)\s*/);
@@ -137,7 +152,9 @@ function processMaterial() {
       insumo: currentMaterial,
       fechaSolicitudInsumos: inicio,
       fechaDevolucion: fin,
-      cantidad: cantidad
+      cantidad: cantidad,
+      actividad: act,
+      descripcion: desc
     });
   } else if (action === 'Registro') {
     const fechaUso = matFechaUso.value;
@@ -153,8 +170,8 @@ function processMaterial() {
       insumo: currentMaterial,
       fechaUsoInsumos: parseFechaMat(fechaUso),
       cantidad: cantidadReg,
-      nombreActividad: act,
-      observaciones: desc
+      actividad: act,
+      descripcion: desc
     });
   }
   return true;
@@ -167,9 +184,9 @@ function showMaterialStep3() {
   let html = '<ul>';
   matCart.forEach((item, idx) => {
     if (item.tipo === 'Solicitud de Insumos') {
-      html += `<li><strong>${idx + 1}. ${item.insumo}</strong> – Solicitud (${formatDate(item.fechaSolicitudInsumos)} a ${formatDate(item.fechaDevolucion)}, Cantidad: ${item.cantidad})</li>`;
+      html += `<li><strong>${idx + 1}. ${item.insumo}</strong> – Solicitud (${formatDate(item.fechaSolicitudInsumos)} a ${formatDate(item.fechaDevolucion)}, Cantidad: ${item.cantidad}) – <em>${item.actividad}</em></li>`;
     } else {
-      html += `<li><strong>${idx + 1}. ${item.insumo}</strong> – Registro el ${formatDate(item.fechaUsoInsumos)} (${item.nombreActividad}, Cantidad: ${item.cantidad})</li>`;
+      html += `<li><strong>${idx + 1}. ${item.insumo}</strong> – Registro el ${formatDate(item.fechaUsoInsumos)} (Cantidad: ${item.cantidad}) – <em>${item.actividad}</em></li>`;
     }
   });
   html += '</ul>';

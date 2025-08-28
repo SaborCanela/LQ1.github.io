@@ -20,8 +20,8 @@
       margin: 0;
       padding: 0;
       font-family: 'Inter', sans-serif;
-      /* Fondo tenue con degradado y textura */
-      background: linear-gradient(135deg, #e8f0fe 0%, #f5faff 100%);
+      /* Fondo con imagen difuminada para armonizar con el resto de páginas */
+      background: url('fondo.png') no-repeat center/cover fixed;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -35,7 +35,8 @@
       justify-content: space-between;
       align-items: center;
       padding: 0.75rem 1rem;
-      background: var(--bg-glass);
+      /* Vidrio translúcido similar a otras páginas */
+      background: rgba(255, 255, 255, 0.4);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       border-bottom: 1px solid rgba(255, 255, 255, 0.3);
@@ -98,6 +99,41 @@
       padding: 1rem;
       font-size: 0.85rem;
       color: #555;
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    /* Aviso emergente */
+    .aviso {
+      width: 100%;
+      max-width: 700px;
+      margin: 1rem auto;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .aviso-content {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .aviso-icon {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+    }
+    .aviso-cerrar {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #333;
+      margin-left: auto;
     }
   </style>
 </head>
@@ -120,10 +156,33 @@
       <a href="reactivos.html">Reactivos</a>
     </nav>
   </main>
+  <!-- Aviso emergente -->
+  <div id="aviso" class="aviso">
+    <div class="aviso-content">
+      <img src="aviso_icon.png" alt="Icono de aviso" class="aviso-icon" loading="lazy">
+      <p id="avisoTexto">Por favor, recuerde devolver el material limpio y en buen estado.</p>
+      <button id="avisoCerrar" class="aviso-cerrar" aria-label="Cerrar aviso">×</button>
+    </div>
+  </div>
   <footer>
     <p><strong>Contacto:</strong> thomas.garzon@ikiam.edu.ec</p>
     <p><strong>Teléfono:</strong> 0959546317</p>
     <p><strong>Ubicación:</strong> Laboratorio Química 1 de Docencia – Tena, Ecuador</p>
   </footer>
+  <script>
+    // Muestra u oculta el aviso según si ya fue cerrado en la sesión
+    (function() {
+      const avisoEl = document.getElementById('aviso');
+      const avisoCerrar = document.getElementById('avisoCerrar');
+      // Comprueba si el aviso se ha cerrado anteriormente
+      if (sessionStorage.getItem('avisoCerrado')) {
+        avisoEl.style.display = 'none';
+      }
+      avisoCerrar.addEventListener('click', () => {
+        avisoEl.style.display = 'none';
+        sessionStorage.setItem('avisoCerrado', '1');
+      });
+    })();
+  </script>
 </body>
 </html>

@@ -19,28 +19,56 @@
       margin: 0;
       padding: 0;
       font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, #e8f0fe 0%, #f5faff 100%);
+      /* Utiliza una imagen de fondo con efecto de desenfoque. La imagen se encuentra en
+         la carpeta del proyecto como fondo.png. Se posiciona centrada y se ajusta a
+         toda la pantalla. */
+      background: url('fondo.png') no-repeat center/cover fixed;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
     }
+    /* Encabezado con logos y efecto glass */
     header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      width: 100%;
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 0.5rem;
       padding: 0.75rem 1rem;
-      background: rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.4);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       border-bottom: 1px solid rgba(255, 255, 255, 0.3);
     }
-    header img {
-      width: 32px;
-      height: 32px;
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .header-left img {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+    }
+    .back-btn {
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-size: 1.2rem;
+      cursor: pointer;
+      margin-right: 0.5rem;
     }
     header h1 {
       margin: 0;
-      font-size: 1.2rem;
+      font-size: 1.3rem;
+      color: #001d3a;
+      font-weight: 500;
+    }
+    .header-right img {
+      width: 70px;
+      object-fit: contain;
     }
     main {
       flex-grow: 1;
@@ -95,12 +123,35 @@
     button:hover {
       background: var(--primary-dark);
     }
-    .equipment-image {
+    /* Nuevo layout para mostrar imagen a la derecha */
+    .step2-content {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+    .step-details {
+      flex: 1 1 60%;
+    }
+    .step-image {
+      flex: 1 1 40%;
+      display: flex;
+      justify-content: center;
+    }
+    .step-image img {
       width: 100%;
-      max-height: 250px;
-      object-fit: cover;
+      height: auto;
+      max-height: 300px;
+      object-fit: contain;
       border-radius: var(--border-radius);
-      margin-bottom: 1rem;
+    }
+    @media (max-width: 640px) {
+      .step2-content {
+        flex-direction: column;
+      }
+      .step-details, .step-image {
+        flex: 1 1 100%;
+      }
     }
     .summary {
       border-top: 1px solid #ddd;
@@ -115,12 +166,29 @@
     .summary li {
       margin-bottom: 0.5rem;
     }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.85rem;
+      color: #555;
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(255, 255, 255, 0.3);
+    }
   </style>
 </head>
 <body>
   <header>
-    <button id="backHome" aria-label="Volver al inicio" style="background:none;border:none;color:#007bff;font-size:1rem;cursor:pointer">← Inicio</button>
-    <h1>Equipos</h1>
+    <div class="header-left">
+      <button id="backHome" class="back-btn" aria-label="Volver al inicio">←</button>
+      <img src="logo.png" alt="Logo del laboratorio" loading="lazy">
+      <h1>Equipos</h1>
+    </div>
+    <div class="header-right">
+      <img src="ikiam-logo.png" alt="Ikiam" loading="lazy">
+    </div>
   </header>
   <main>
     <!-- Paso 1: Búsqueda -->
@@ -136,32 +204,41 @@
     <!-- Paso 2: Detalle y acción -->
     <div class="card hidden" id="step2">
       <h2 id="equipoNombre">Equipo</h2>
-      <img id="equipoImg" class="equipment-image" src="" alt="Imagen del equipo" loading="lazy">
-      <label for="equipoAccion">Tipo de acción</label>
-      <select id="equipoAccion">
-        <option value="">– selecciona –</option>
-        <option value="Solicitud">Solicitud</option>
-        <option value="Registro">Registro</option>
-      </select>
-      <!-- Formulario para Solicitud -->
-      <div id="formSolicitud" class="hidden">
-        <label for="solicitudRango">Rango de uso (fecha inicio – fecha fin)</label>
-        <input type="text" id="solicitudRango" placeholder="Selecciona rango" readonly>
-        <div id="ocupacionInfo" style="font-size:0.85rem;color:#555;margin-top:0.5rem;"></div>
-      </div>
-      <!-- Formulario para Registro -->
-      <div id="formRegistro" class="hidden">
-        <label for="registroFecha">Fecha de uso</label>
-        <input type="text" id="registroFecha" placeholder="dd/mm/aaaa" readonly>
-        <label for="registroActividad">Actividad</label>
-        <select id="registroActividad">
-          <option value="">– selecciona –</option>
-          <option value="Práctica de laboratorio">Práctica de laboratorio</option>
-          <option value="Proyecto">Proyecto</option>
-          <option value="Tesis">Tesis</option>
-        </select>
-        <label for="registroDescripcion">Actividad que se realizó</label>
-        <input type="text" id="registroDescripcion" placeholder="Descripción">
+      <div class="step2-content">
+        <div class="step-details">
+          <label for="equipoAccion">Tipo de acción</label>
+          <select id="equipoAccion">
+            <option value="">– selecciona –</option>
+            <option value="Solicitud">Solicitud</option>
+            <option value="Registro">Registro</option>
+          </select>
+          <!-- Formulario para Solicitud -->
+          <div id="formSolicitud" class="hidden">
+            <label for="solicitudRango">Rango de uso (fecha inicio – fecha fin)</label>
+            <input type="text" id="solicitudRango" placeholder="Selecciona rango" readonly>
+            <div id="ocupacionInfo" style="font-size:0.85rem;color:#555;margin-top:0.5rem;"></div>
+          </div>
+          <!-- Formulario para Registro (solo fecha de uso) -->
+          <div id="formRegistro" class="hidden">
+            <label for="registroFecha">Fecha de uso</label>
+            <input type="text" id="registroFecha" placeholder="dd/mm/aaaa" readonly>
+          </div>
+          <!-- Grupo de actividad (se muestra para Solicitud y Registro) -->
+          <div id="equipoActividadGroup" class="hidden">
+            <label for="equipoActividad">Actividad</label>
+            <select id="equipoActividad">
+              <option value="">– selecciona –</option>
+              <option value="Práctica de laboratorio">Práctica de laboratorio</option>
+              <option value="Proyecto">Proyecto</option>
+              <option value="Tesis">Tesis</option>
+            </select>
+            <label for="equipoDescripcion">Actividad que se realizó</label>
+            <input type="text" id="equipoDescripcion" placeholder="Descripción">
+          </div>
+        </div>
+        <div class="step-image">
+          <img id="equipoImg" src="" alt="Imagen del equipo" loading="lazy">
+        </div>
       </div>
       <div class="actions">
         <button id="cancelStep2">Cancelar</button>
@@ -185,6 +262,11 @@
       </div>
     </div>
   </main>
+  <footer>
+    <p><strong>Contacto:</strong> thomas.garzon@ikiam.edu.ec</p>
+    <p><strong>Teléfono:</strong> 0959546317</p>
+    <p><strong>Ubicación:</strong> Laboratorio Química 1 de Docencia – Tena, Ecuador</p>
+  </footer>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/rangePlugin.js"></script>
   <script type="module" src="equipos.js"></script>
