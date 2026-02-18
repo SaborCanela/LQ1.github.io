@@ -45,6 +45,13 @@ window.addEventListener('load', async () => {
     console.error('Error al cargar lista de materiales:', err);
     materialList.innerHTML = '';
   }
+  // Prefill user information from localStorage if available
+  try {
+    const storedNombre = localStorage.getItem('nombreUsuario');
+    const storedCorreo = localStorage.getItem('correoUsuario');
+    if (storedNombre) matNombreUsuario.value = storedNombre;
+    if (storedCorreo) matCorreoUsuario.value = storedCorreo;
+  } catch (e) {}
 });
 
 // Back to home

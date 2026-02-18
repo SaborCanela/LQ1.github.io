@@ -14,7 +14,7 @@
  * parte del FormData.
  */
 
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwMzgegcn1qau1ssUUIpVlrPDNEwBGJXha-NRutHuohBk7ORzymco2Mp-FEu_w2SlyYHA/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyjulQmL_5axxncByc3Zf_PpsyItYRMwsFLDIjp3adYXX6ChEDGpSrNoL3lufcDCKpKJg/exec';
 
 // TTL para las listas en milisegundos (12 horas)
 const TTL_MS = 12 * 60 * 60 * 1000;
@@ -120,6 +120,8 @@ export async function sendRequest(payload, items = [], file = null) {
   if (file) {
     const b64 = await toBase64(file);
     formData.append('fileName', file.name);
+    // Enviar mimeType para que el backend guarde el blob correctamente
+    formData.append('fileMimeType', file.type || 'application/pdf');
     formData.append('fileBase64', b64);
   }
   const resp = await fetch(WEB_APP_URL, {

@@ -10,6 +10,8 @@ Este repositorio contiene una propuesta de refactorización del sitio web del **
 - **material.html** / **material.js** – Flujo similar al de equipos pero para materiales de laboratorio.  Incluye cantidad y rango de fechas para solicitudes y registros.
 - **reactivos.html** / **reactivos.js** – Registro y solicitud de reactivos.  Permite especificar unidades, marcar reactivos controlados y subir un archivo de solicitud.  El archivo adjunto se envía únicamente al administrador.
 - **api.js** – Módulo JavaScript que encapsula las llamadas al Web App de Google Apps Script.  Implementa almacenamiento en caché de las listas (reactivos, insumos y equipos) en *localStorage* con un TTL de 12 horas, wrappers para obtener disponibilidad y un método genérico `sendRequest` para envíos simples o múltiples.
+- **css/app.css** – Estilos compartidos del frontend (tokens, botones, tarjetas, inputs, toasts).
+- **js/ui-kit.js** – Utilidades UI compartidas (toasts, validación requerida, estados de carga, imágenes con fallback).
 - **appsScript.js** – Versión actualizada del script de Google Apps Script.  Incluye funciones para manejar envíos múltiples (`processMultiRequest_`), decodificar adjuntos y enviar correos de confirmación al usuario y al administrador.  También conserva `processSingleRequest_` para retrocompatibilidad con el flujo antiguo.
 
 ## Despliegue del Web App

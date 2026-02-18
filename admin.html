@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard – LQ1D</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+
+<body class="admin">
+  <div class="admin-shell">
+    <aside class="admin-sidebar" aria-label="Navegacion">
+      <div class="admin-badge" aria-hidden="true"></div>
+      <a class="nav-icon" href="index.html" title="Inicio" aria-label="Inicio"><span aria-hidden="true">⌂</span></a>
+      <a class="nav-icon" href="solicitudes.html" title="Solicitudes" aria-label="Solicitudes"><span aria-hidden="true">≡</span></a>
+      <a class="nav-icon active" href="#" title="Dashboard" aria-label="Dashboard" aria-current="page"><span aria-hidden="true">◉</span></a>
+      <div style="flex:1"></div>
+      <a class="nav-icon" href="https://docs.google.com/spreadsheets/d/14x0fat7x18QlAN9kKYgNYJkAvw0L1OkyEAS0yLukR5Q/edit?usp=sharing" target="_blank" rel="noopener" title="Abrir base" aria-label="Abrir base"><span aria-hidden="true">↗</span></a>
+    </aside>
+
+    <main class="admin-main">
+      <div class="admin-topbar">
+        <div>
+          <h1 class="admin-title">Dashboard operativo</h1>
+          <p class="admin-subtitle">Estructurado por entidades, flujos y jerarquia funcional.</p>
+        </div>
+        <div class="admin-actions">
+          <div id="adminStatus" class="admin-pill">Conectando...</div>
+          <button id="adminConfig" class="btn btn-secondary" type="button">Config API</button>
+          <button id="adminRefresh" class="btn btn-secondary" type="button">Actualizar</button>
+        </div>
+      </div>
+
+      <div id="adminError" class="error-banner hidden" role="alert"></div>
+
+      <div class="dash">
+        <!-- LEVEL 1: Executive Overview -->
+        <section class="dash-section" aria-label="Executive Overview">
+          <div class="dash-head">
+            <div>
+              <h2>Executive Overview</h2>
+              <p>KPIs globales criticos</p>
+            </div>
+          </div>
+          <div class="dash-body">
+            <div class="kpi-row">
+              <div class="kpi-tile"><div class="label">Solicitudes totales</div><div class="value" id="kpiTotalRequests">0</div></div>
+              <div class="kpi-tile"><div class="label">Equipos en uso ahora</div><div class="value" id="kpiEquipmentInUseNow">0</div></div>
+              <div class="kpi-tile"><div class="label">Eventos uso reactivos</div><div class="value" id="kpiReagentsUseEvents">0</div></div>
+              <div class="kpi-tile"><div class="label">Insumos activos</div><div class="value" id="kpiSuppliesActiveNow">0</div></div>
+              <div class="kpi-tile"><div class="label">Usuarios unicos (30d)</div><div class="value" id="kpiUniqueUsers30d">0</div></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- LEVEL 2: Operational Activity -->
+        <section class="dash-section" aria-label="Operational Activity">
+          <div class="dash-head">
+            <div>
+              <h2>Operational Activity</h2>
+              <p>Timeline mensual: eventos agregados por entidad (stacked)</p>
+            </div>
+          </div>
+          <div class="dash-body">
+            <div class="chart-box"><canvas id="chartOperational"></canvas></div>
+          </div>
+        </section>
+
+        <!-- LEVEL 3: Resource Status -->
+        <section class="dash-section" aria-label="Resource Status">
+          <div class="dash-head">
+            <div>
+              <h2>Resource Status</h2>
+              <p>Estado de recursos y top de uso</p>
+            </div>
+          </div>
+          <div class="dash-body">
+            <div class="resource-row">
+              <div class="resource-card">
+                <h3>Equipos</h3>
+                <div class="resource-meta">Uso y disponibilidad</div>
+                <div class="resource-kpis">
+                  <div class="mini"><div class="label">En uso ahora</div><div class="value" id="equiposInUseNow">0</div></div>
+                  <div class="mini"><div class="label">Disponibles</div><div class="value" id="equiposAvailable">—</div></div>
+                </div>
+                <div style="height:10px"></div>
+                <div class="chart-box small"><canvas id="chartEquiposRequested"></canvas></div>
+                <div style="height:10px"></div>
+                <div class="chart-box small"><canvas id="chartEquiposUsed"></canvas></div>
+              </div>
+
+              <div class="resource-card">
+                <h3>Reactivos</h3>
+                <div class="resource-meta">Consumido (uso) vs solicitado (separado)</div>
+                <div class="resource-kpis">
+                  <div class="mini"><div class="label">Consumido (g)</div><div class="value" id="reagUsedG">0</div></div>
+                  <div class="mini"><div class="label">Consumido (mL)</div><div class="value" id="reagUsedML">0</div></div>
+                  <div class="mini"><div class="label">Solicitado (g)</div><div class="value" id="reagReqG">0</div></div>
+                  <div class="mini"><div class="label">Solicitado (mL)</div><div class="value" id="reagReqML">0</div></div>
+                </div>
+                <div style="height:10px"></div>
+                <div class="badge" id="reagUnknownBadge" hidden></div>
+                <div style="height:10px"></div>
+                <div class="chart-box small"><canvas id="chartReactivosConsumedMass"></canvas></div>
+                <div style="height:10px"></div>
+                <div class="chart-box small"><canvas id="chartReactivosConsumedVol"></canvas></div>
+                <div style="height:10px"></div>
+                <div class="chart-box small"><canvas id="chartReactivosRequestedVol"></canvas></div>
+              </div>
+
+              <div class="resource-card">
+                <h3>Insumos</h3>
+                <div class="resource-meta">Prestamos / devoluciones</div>
+                <div class="resource-kpis">
+                  <div class="mini"><div class="label">Activos</div><div class="value" id="insumosActive">0</div></div>
+                  <div class="mini"><div class="label">Top prestados</div><div class="value" id="insumosTopCount">0</div></div>
+                </div>
+                <div style="height:10px"></div>
+                <div class="chart-box small"><canvas id="chartInsumosTop"></canvas></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- LEVEL 4: User Activity -->
+        <section class="dash-section" aria-label="User Activity">
+          <div class="dash-head">
+            <div>
+              <h2>User Activity</h2>
+              <p>Tabla por usuario y top 10</p>
+            </div>
+          </div>
+          <div class="dash-body">
+            <div class="table-wrap">
+              <table class="dash-table">
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Total solicitudes</th>
+                    <th>Usos equipo</th>
+                    <th>Usos reactivos</th>
+                    <th>Ultima actividad</th>
+                  </tr>
+                </thead>
+                <tbody id="userTableBody"></tbody>
+              </table>
+            </div>
+            <div style="height:12px"></div>
+            <div class="chart-box small"><canvas id="chartUsersTop"></canvas></div>
+          </div>
+        </section>
+
+        <!-- LEVEL 5: Recent Events -->
+        <section class="dash-section" aria-label="Recent Events">
+          <div class="dash-head">
+            <div>
+              <h2>Recent Events</h2>
+              <p>Ultimos 20 eventos</p>
+            </div>
+          </div>
+          <div class="dash-body">
+            <div id="recentEvents" class="events"></div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="js/admin.js"></script>
+</body>
+</html>

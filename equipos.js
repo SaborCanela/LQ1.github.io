@@ -32,6 +32,16 @@ const observaciones   = document.getElementById('equipoObservaciones');
 
 // Cart to hold multiple equipment requests
 let cart = [];
+
+// Busy intervals and conflict flag
+// "currentBusyIntervals" almacenará los rangos de ocupación del equipo seleccionado
+// recuperados desde el backend. "solicitudConflicto" se actualizará a true si
+// el usuario elige un rango de fechas que se superpone con alguno de estos
+// intervalos.  Se comprueba tanto en el selector de fechas como al
+// procesar la solicitud, de modo que el usuario no pueda enviar una
+// reserva en fechas ya ocupadas.
+let currentBusyIntervals = [];
+let solicitudConflicto = false;
 let currentEquipo = null;
 let fpSolicitud  = null;
 let fpRegistro   = null;
@@ -44,6 +54,15 @@ window.addEventListener('load', async () => {
   } catch (err) {
     console.error('Error al cargar lista de equipos:', err);
     equiposList.innerHTML = '';
+  }
+  // Prefill user information from localStorage if available
+  try {
+    const storedNombre = localStorage.getItem('nombreUsuario');
+    const storedCorreo = localStorage.getItem('correoUsuario');
+    if (storedNombre) nombreUsuario.value = storedNombre;
+    if (storedCorreo) correoUsuario.value = storedCorreo;
+  } catch (e) {
+    // No localStorage available
   }
 });
 
@@ -115,15 +134,37 @@ equipoAccionSel.addEventListener('change', async () => {
       mode: 'range',
       dateFormat: 'd/m/Y',
       onClose: async (selectedDates) => {
+        // Restablecer banderas
+        solicitudConflicto = false;
+        currentBusyIntervals = [];
         if (selectedDates.length === 2) {
           const [start, end] = selectedDates;
-          // Show busy intervals
+          // Cargar rangos ocupados para el equipo y almacenarlos globalmente
           const busy = await getBusyEquipos(currentEquipo);
           if (Array.isArray(busy) && busy.length > 0) {
+            currentBusyIntervals = busy;
+            // Mostrar intervalos ocupados
             ocupacionInfo.innerHTML = '<strong>Ocupado en:</strong> ' + busy.map(b => `${formatDate(b.from)} – ${formatDate(b.to)}`).join(', ');
+            // Convertir fechas seleccionadas a formato ISO para comparación
+            const selInicio = new Date(start).toISOString().split('T')[0];
+            const selFin    = new Date(end).toISOString().split('T')[0];
+            // Comprobar solapamientos: si cualquier ocupación intersecta con las fechas seleccionadas
+            for (const intervalo of busy) {
+              const ocInicio = intervalo.from;
+              const ocFin    = intervalo.to;
+              // Si los intervalos se cruzan
+              if (selFin >= ocInicio && selInicio <= ocFin) {
+                solicitudConflicto = true;
+                break;
+              }
+            }
           } else {
             ocupacionInfo.textContent = '';
           }
+        }
+        // Si hay conflicto, informar al usuario
+        if (solicitudConflicto) {
+          alert('El equipo está ocupado en al menos una de las fechas seleccionadas. Por favor, elija otro rango.');
         }
       }
     });
@@ -180,6 +221,11 @@ function processCurrentEquipo() {
     const desc = equipoDescripcion.value;
     if (!act || !desc) {
       alert('Seleccione la actividad y describa lo que se realizará.');
+      return false;
+    }
+    // Verificar si las fechas seleccionadas se superponen con intervalos ocupados
+    if (solicitudConflicto) {
+      alert('El equipo está ocupado en las fechas seleccionadas. No es posible registrar la solicitud.');
       return false;
     }
     cart.push({

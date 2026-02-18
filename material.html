@@ -6,246 +6,124 @@
   <title>Material de laboratorio – LQ1D</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <style>
-    :root {
-      --primary: #007bff;
-      --primary-dark: #0056b3;
-      --card-bg: rgba(255,255,255,0.95);
-      --radius: 0.75rem;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Inter', sans-serif;
-      /* Fondo con imagen difuminada */
-      background: url('fondo.png') no-repeat center/cover fixed;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-    /* Encabezado con logos y efecto glass */
-    header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.75rem 1rem;
-      background: rgba(255,255,255,0.4);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255,255,255,0.3);
-    }
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .back-btn {
-      background: none;
-      border: none;
-      color: var(--primary);
-      font-size: 1.2rem;
-      cursor: pointer;
-      margin-right: 0.5rem;
-    }
-    .header-left img {
-      width: 40px;
-      height: 40px;
-      object-fit: contain;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 1.3rem;
-      color: #001d3a;
-      font-weight: 500;
-    }
-    .header-right img {
-      width: 70px;
-      object-fit: contain;
-    }
-    main {
-      flex-grow: 1;
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .card {
-      width: 100%;
-      max-width: 800px;
-      background: var(--card-bg);
-      padding: 1.5rem;
-      border-radius: var(--radius);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      margin-bottom: 1rem;
-    }
-    .hidden { display: none !important; }
-    label { display: block; margin-top: 1rem; font-weight: 500; }
-    input, select, textarea {
-      width: 100%;
-      padding: 0.5rem;
-      font-size: 1rem;
-      border: none;
-      border-bottom: 1px solid #ccc;
-      background: transparent;
-    }
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-bottom: 2px solid var(--primary);
-    }
-    button {
-      padding: 0.6rem 1.2rem;
-      font-size: 0.95rem;
-      border: none;
-      border-radius: 0.5rem;
-      cursor: pointer;
-      background: var(--primary);
-      color: white;
-      transition: background 0.3s ease;
-    }
-    button:hover { background: var(--primary-dark); }
-    .actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem; }
-    /* Nuevo layout para mostrar imagen a la derecha */
-    .step2-content {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      align-items: flex-start;
-    }
-    .step-details {
-      flex: 1 1 60%;
-    }
-    .step-image {
-      flex: 1 1 40%;
-      display: flex;
-      justify-content: center;
-    }
-    .step-image img {
-      width: 100%;
-      height: auto;
-      max-height: 300px;
-      object-fit: contain;
-      border-radius: var(--radius);
-    }
-    @media (max-width: 640px) {
-      .step2-content {
-        flex-direction: column;
-      }
-      .step-details, .step-image {
-        flex: 1 1 100%;
-      }
-    }
-    .summary ul { list-style: none; padding: 0; margin: 0; }
-    .summary li { margin-bottom: 0.5rem; }
-
-    footer {
-      text-align: center;
-      padding: 1rem;
-      font-size: 0.85rem;
-      color: #555;
-      background: rgba(255,255,255,0.4);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border-top: 1px solid rgba(255,255,255,0.3);
-    }
-  </style>
+  <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
-  <header>
-    <div class="header-left">
-      <button id="backHomeMat" class="back-btn" aria-label="Volver al inicio">←</button>
-      <img src="logo.png" alt="Logo del laboratorio" loading="lazy">
+  <header class="app-header">
+    <div class="left">
+      <button id="backHomeMat" class="back-btn" aria-label="Volver">←</button>
+      <img class="logo" src="logo.png" alt="Logo del laboratorio" loading="lazy">
       <h1>Material de laboratorio</h1>
     </div>
-    <div class="header-right">
-      <img src="ikiam-logo.png" alt="Ikiam" loading="lazy">
-    </div>
+    <img class="brand" src="ikiam-logo.png" alt="Ikiam" loading="lazy">
   </header>
-  <main>
+  <main class="app-main">
+    <div class="container">
     <!-- Paso 1: Búsqueda -->
     <div class="card" id="matStep1">
       <h2>Búsqueda de material</h2>
-      <label for="matBusqueda">Material</label>
-      <input type="text" id="matBusqueda" list="materialList" placeholder="Escribe o selecciona el material" autocomplete="off">
+      <p class="help">Selecciona el material, luego elige si es solicitud o registro de uso.</p>
+      <div class="field">
+        <label for="matBusqueda">Material</label>
+        <input type="text" id="matBusqueda" list="materialList" placeholder="Escribe o selecciona el material" autocomplete="off">
+      </div>
       <datalist id="materialList"></datalist>
       <div class="actions">
-        <button id="buscarMaterialBtn">Buscar</button>
+        <button id="buscarMaterialBtn" class="btn btn-primary" type="button">Buscar</button>
       </div>
     </div>
     <!-- Paso 2: Detalle y acción -->
     <div class="card hidden" id="matStep2">
       <h2 id="matNombre">Material</h2>
-      <div class="step2-content">
-        <div class="step-details">
-          <label for="matAccion">Tipo de acción</label>
-          <select id="matAccion">
+      <div class="step-layout">
+        <div class="details">
+          <div class="field">
+            <label for="matAccion">Tipo de accion</label>
+            <select id="matAccion">
             <option value="">– selecciona –</option>
             <option value="Solicitud">Solicitud</option>
             <option value="Registro">Registro</option>
-          </select>
+            </select>
+          </div>
           <!-- Solicitud form -->
           <div id="matFormSolicitud" class="hidden">
-            <label for="matRango">Rango de fechas</label>
-            <input type="text" id="matRango" placeholder="Selecciona rango" readonly>
-            <label for="matCantidadSol">Cantidad</label>
-            <input type="number" id="matCantidadSol" min="0" step="0.1" placeholder="Cantidad">
+            <div class="field">
+              <label for="matRango">Rango de fechas</label>
+              <input type="text" id="matRango" placeholder="Selecciona rango" readonly>
+            </div>
+            <div class="field">
+              <label for="matCantidadSol">Cantidad</label>
+              <input type="number" id="matCantidadSol" min="0" step="0.1" placeholder="Cantidad">
+            </div>
           </div>
           <!-- Registro form (solo fecha de uso y cantidad) -->
           <div id="matFormRegistro" class="hidden">
-            <label for="matFechaUso">Fecha de uso</label>
-            <input type="text" id="matFechaUso" placeholder="dd/mm/aaaa" readonly>
-            <label for="matCantidadReg">Cantidad</label>
-            <input type="number" id="matCantidadReg" min="0" step="0.1" placeholder="Cantidad">
+            <div class="field">
+              <label for="matFechaUso">Fecha de uso</label>
+              <input type="text" id="matFechaUso" placeholder="dd/mm/aaaa" readonly>
+            </div>
+            <div class="field">
+              <label for="matCantidadReg">Cantidad</label>
+              <input type="number" id="matCantidadReg" min="0" step="0.1" placeholder="Cantidad">
+            </div>
           </div>
           <!-- Grupo de actividad (se muestra para Solicitud y Registro) -->
           <div id="matActividadGroup" class="hidden">
-            <label for="matActividad">Actividad</label>
-            <select id="matActividad">
+            <div class="field">
+              <label for="matActividad">Actividad</label>
+              <select id="matActividad">
               <option value="">– selecciona –</option>
               <option value="Práctica de laboratorio">Práctica de laboratorio</option>
               <option value="Proyecto">Proyecto</option>
               <option value="Tesis">Tesis</option>
-            </select>
-            <label for="matDescripcion">Actividad que se realizó</label>
-            <input type="text" id="matDescripcion" placeholder="Descripción">
+              </select>
+            </div>
+            <div class="field">
+              <label for="matDescripcion">Descripcion</label>
+              <input type="text" id="matDescripcion" placeholder="Que se va a realizar">
+            </div>
           </div>
         </div>
-        <div class="step-image">
-          <img id="matImg" src="" alt="Imagen del material" loading="lazy">
+        <div class="media">
+          <img class="catalog" id="matImg" src="" alt="Imagen del material" loading="lazy">
         </div>
       </div>
       <div class="actions">
-        <button id="matCancelStep2">Cancelar</button>
-        <button id="matAddBtn">Agregar otro</button>
-        <button id="matFinalizarBtn">Finalizar</button>
+        <button id="matCancelStep2" class="btn btn-secondary" type="button">Cancelar</button>
+        <button id="matAddBtn" class="btn btn-secondary" type="button">Agregar otro</button>
+        <button id="matFinalizarBtn" class="btn btn-primary" type="button">Finalizar</button>
       </div>
     </div>
     <!-- Paso 3: Resumen y datos generales -->
     <div class="card hidden" id="matStep3">
       <h2>Resumen de materiales</h2>
       <div id="matResumen" class="summary"></div>
-      <label for="matNombreUsuario">Nombre</label>
-      <input type="text" id="matNombreUsuario" placeholder="Nombre completo" required>
-      <label for="matCorreoUsuario">Correo institucional</label>
-      <input type="email" id="matCorreoUsuario" placeholder="usuario@ikiam.edu.ec" required>
-      <label for="matObsUsuario">Observaciones</label>
-      <textarea id="matObsUsuario" rows="3" placeholder="Observaciones"></textarea>
+      <div class="field">
+        <label for="matNombreUsuario">Nombre</label>
+        <input type="text" id="matNombreUsuario" placeholder="Nombre completo" required>
+      </div>
+      <div class="field">
+        <label for="matCorreoUsuario">Correo institucional</label>
+        <input type="email" id="matCorreoUsuario" placeholder="usuario@ikiam.edu.ec" required>
+      </div>
+      <div class="field">
+        <label for="matObsUsuario">Observaciones</label>
+        <textarea id="matObsUsuario" rows="3" placeholder="Observaciones"></textarea>
+      </div>
       <div class="actions">
-        <button id="matBackToSearch">← Volver</button>
-        <button id="matEnviar">Enviar</button>
+        <button id="matBackToSearch" class="btn btn-secondary" type="button">Volver</button>
+        <button id="matEnviar" class="btn btn-primary" type="button">Enviar</button>
       </div>
     </div>
+    </div>
   </main>
-  <footer>
+  <footer class="app-footer">
     <p><strong>Contacto:</strong> thomas.garzon@ikiam.edu.ec</p>
     <p><strong>Teléfono:</strong> 0959546317</p>
     <p><strong>Ubicación:</strong> Laboratorio Química 1 de Docencia – Tena, Ecuador</p>
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script type="module" src="material.js"></script>
+  <!-- Importamos el módulo desde la carpeta js -->
+  <script type="module" src="js/material.js"></script>
 </body>
 </html>

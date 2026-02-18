@@ -24,6 +24,22 @@ let fechaPicker       = null;
 // Paso actual
 let currentStep = 1;
 
+// Prefill general information from localStorage if available
+window.addEventListener('load', () => {
+  try {
+    const storedNombre = localStorage.getItem('nombreUsuario');
+    const storedCorreo = localStorage.getItem('correoUsuario');
+    if (storedNombre) {
+      const nombreEl = document.getElementById('nombre');
+      if (nombreEl) nombreEl.value = storedNombre;
+    }
+    if (storedCorreo) {
+      const correoEl = document.getElementById('correo');
+      if (correoEl) correoEl.value = storedCorreo;
+    }
+  } catch (e) {}
+});
+
 // Configurar cancelación: volver al inicio (index.html)
 cancelBtn.addEventListener('click', () => {
   window.location.href = 'index.html';

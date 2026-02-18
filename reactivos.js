@@ -46,6 +46,13 @@ window.addEventListener('load', async () => {
     console.error('Error al cargar lista de reactivos:', err);
     reacList.innerHTML = '';
   }
+  // Prefill user information from localStorage if available
+  try {
+    const storedNombre = localStorage.getItem('nombreUsuario');
+    const storedCorreo = localStorage.getItem('correoUsuario');
+    if (storedNombre) reacNombreUsuario.value = storedNombre;
+    if (storedCorreo) reacCorreoUsuario.value = storedCorreo;
+  } catch (e) {}
 });
 
 // Go back home

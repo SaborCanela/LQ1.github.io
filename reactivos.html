@@ -6,213 +6,68 @@
   <title>Reactivos – LQ1D</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="css/app.css">
   <style>
-    :root {
-      --primary: #007bff;
-      --primary-dark: #0056b3;
-      --card-bg: rgba(255,255,255,0.95);
-      --radius: 0.75rem;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Inter', sans-serif;
-      /* Fondo con imagen difuminada */
-      background: url('fondo.png') no-repeat center/cover fixed;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-    /* Encabezado con logos y efecto glass */
-    header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.75rem 1rem;
-      background: rgba(255,255,255,0.4);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255,255,255,0.3);
-    }
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .back-btn {
-      background: none;
-      border: none;
-      color: var(--primary);
-      font-size: 1.2rem;
-      cursor: pointer;
-      margin-right: 0.5rem;
-    }
-    .header-left img {
-      width: 40px;
-      height: 40px;
-      object-fit: contain;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 1.3rem;
-      color: #001d3a;
-      font-weight: 500;
-    }
-    .header-right img {
-      width: 70px;
-      object-fit: contain;
-    }
-    main {
-      flex-grow: 1;
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .card {
-      width: 100%;
-      max-width: 800px;
-      background: var(--card-bg);
-      padding: 1.5rem;
-      border-radius: var(--radius);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      margin-bottom: 1rem;
-    }
-    .hidden { display: none !important; }
-    label { display: block; margin-top: 1rem; font-weight: 500; }
-    input, select, textarea {
-      width: 100%;
-      padding: 0.5rem;
-      font-size: 1rem;
-      border: none;
-      border-bottom: 1px solid #ccc;
-      background: transparent;
-    }
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-bottom: 2px solid var(--primary);
-    }
-    .actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem; }
-    button {
-      padding: 0.6rem 1.2rem;
-      font-size: 0.95rem;
-      border: none;
-      border-radius: 0.5rem;
-      cursor: pointer;
-      background: var(--primary);
-      color: white;
-      transition: background 0.3s ease;
-    }
-    button:hover { background: var(--primary-dark); }
-    /* Nuevo layout para mostrar imagen a la derecha */
-    .step2-content {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      align-items: flex-start;
-    }
-    .step-details {
-      flex: 1 1 60%;
-    }
-    .step-image {
-      flex: 1 1 40%;
-      display: flex;
-      justify-content: center;
-    }
-    .step-image img {
-      width: 100%;
-      height: auto;
-      max-height: 300px;
-      object-fit: contain;
-      border-radius: var(--radius);
-    }
-    /* Estilo para el contenedor del checkbox de reactivo controlado */
-    #reacControlWrap {
-      margin-top: 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-    #reacControlWrap .control-checkbox {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-weight: 500;
-    }
-    @media (max-width: 640px) {
-      .step2-content {
-        flex-direction: column;
-      }
-      .step-details, .step-image {
-        flex: 1 1 100%;
-      }
-    }
-    .summary ul { list-style: none; padding: 0; margin: 0; }
-    .summary li { margin-bottom: 0.5rem; }
-
-    footer {
-      text-align: center;
-      padding: 1rem;
-      font-size: 0.85rem;
-      color: #555;
-      background: rgba(255,255,255,0.4);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border-top: 1px solid rgba(255,255,255,0.3);
-    }
+    #reacControlWrap { margin-top: 12px; }
+    #reacControlWrap .control-checkbox { display: flex; align-items: center; gap: 10px; font-weight: 650; }
+    #reacControlWrap input[type="checkbox"] { width: 18px; height: 18px; }
+    input[type="file"] { background: rgba(255, 255, 255, 0.90); }
   </style>
 </head>
 <body>
-  <header>
-    <div class="header-left">
-      <button id="backHomeReact" class="back-btn" aria-label="Volver al inicio">←</button>
-      <img src="logo.png" alt="Logo del laboratorio" loading="lazy">
+  <header class="app-header">
+    <div class="left">
+      <button id="backHomeReact" class="back-btn" aria-label="Volver">←</button>
+      <img class="logo" src="logo.png" alt="Logo del laboratorio" loading="lazy">
       <h1>Reactivos</h1>
     </div>
-    <div class="header-right">
-      <img src="ikiam-logo.png" alt="Ikiam" loading="lazy">
-    </div>
+    <img class="brand" src="ikiam-logo.png" alt="Ikiam" loading="lazy">
   </header>
-  <main>
+  <main class="app-main">
+    <div class="container">
     <!-- Paso 1 -->
     <div class="card" id="reacStep1">
       <h2>Búsqueda de reactivos</h2>
-      <label for="reacBusqueda">Reactivo</label>
-      <input type="text" id="reacBusqueda" list="reacList" placeholder="Escribe o selecciona el reactivo" autocomplete="off">
+      <p class="help">Si es controlado, el sistema pedira adjuntar el documento de solicitud.</p>
+      <div class="field">
+        <label for="reacBusqueda">Reactivo</label>
+        <input type="text" id="reacBusqueda" list="reacList" placeholder="Escribe o selecciona el reactivo" autocomplete="off">
+      </div>
       <datalist id="reacList"></datalist>
       <div class="actions">
-        <button id="buscarReactivoBtn">Buscar</button>
+        <button id="buscarReactivoBtn" class="btn btn-primary" type="button">Buscar</button>
       </div>
     </div>
     <!-- Paso 2: Detalle y acción -->
     <div class="card hidden" id="reacStep2">
       <h2 id="reacNombre">Reactivo</h2>
-      <div class="step2-content">
-        <div class="step-details">
-          <label for="reacAccion">Tipo de acción</label>
-          <select id="reacAccion">
+      <div class="step-layout">
+        <div class="details">
+          <div class="field">
+            <label for="reacAccion">Tipo de accion</label>
+            <select id="reacAccion">
             <option value="">– selecciona –</option>
             <option value="Solicitud">Solicitud</option>
             <option value="Registro">Registro</option>
-          </select>
+            </select>
+          </div>
           <!-- Formulario común a solicitud y registro -->
-            <div id="reacFormCommon" class="hidden">
-            <label for="reacCantidad">Cantidad</label>
-            <input type="number" id="reacCantidad" min="0" step="0.01" placeholder="Cantidad">
-            <label for="reacUnidad">Unidad</label>
-            <select id="reacUnidad">
+          <div id="reacFormCommon" class="hidden">
+            <div class="field">
+              <label for="reacCantidad">Cantidad</label>
+              <input type="number" id="reacCantidad" min="0" step="0.01" placeholder="Cantidad">
+            </div>
+            <div class="field">
+              <label for="reacUnidad">Unidad</label>
+              <select id="reacUnidad">
               <option value="">– unidad –</option>
               <option value="g">g</option>
               <option value="mg">mg</option>
               <option value="mL">mL</option>
               <option value="L">L</option>
               <option value="otro">Otro</option>
-            </select>
+              </select>
+            </div>
             <!-- Contenedor de reactivo controlado: se ubica inmediatamente después de la unidad -->
             <div id="reacControlWrap">
               <label for="reacControlado" class="control-checkbox">
@@ -220,62 +75,80 @@
                 Reactivo controlado
               </label>
               <div id="reacFileDiv" class="hidden">
-                <label for="reacFile">Solicitud de reactivo (PDF/imagen)</label>
-                <input type="file" id="reacFile" accept="application/pdf,image/*">
+                <div class="field">
+                  <label for="reacFile">Solicitud de reactivo (PDF/imagen)</label>
+                  <input type="file" id="reacFile" accept="application/pdf,image/*">
+                </div>
               </div>
             </div>
             <div id="unidadOtroDiv" class="hidden">
-              <label for="reacUnidadOtro">Especificar unidad</label>
-              <input type="text" id="reacUnidadOtro" placeholder="Unidad">
+              <div class="field">
+                <label for="reacUnidadOtro">Especificar unidad</label>
+                <input type="text" id="reacUnidadOtro" placeholder="Unidad">
+              </div>
             </div>
           </div>
           <!-- Campo específico para Solicitud -->
           <div id="reacFormSolicitud" class="hidden">
-            <label for="reacLabDestino">Laboratorio de destino</label>
-            <input type="text" id="reacLabDestino" placeholder="Laboratorio de destino">
+            <div class="field">
+              <label for="reacLabDestino">Laboratorio de destino</label>
+              <input type="text" id="reacLabDestino" placeholder="Laboratorio de destino">
+            </div>
           </div>
         </div>
-        <div class="step-image">
-          <img id="reacImg" src="" alt="Imagen del reactivo" loading="lazy">
+        <div class="media">
+          <img class="catalog" id="reacImg" src="" alt="Imagen del reactivo" loading="lazy">
         </div>
       </div>
       <div class="actions">
-        <button id="reacCancelStep2">Cancelar</button>
-        <button id="reacAddBtn">Agregar</button>
-        <button id="reacFinalizarBtn">Finalizar</button>
+        <button id="reacCancelStep2" class="btn btn-secondary" type="button">Cancelar</button>
+        <button id="reacAddBtn" class="btn btn-secondary" type="button">Agregar</button>
+        <button id="reacFinalizarBtn" class="btn btn-primary" type="button">Finalizar</button>
       </div>
     </div>
     <!-- Paso 3: Resumen y datos generales -->
     <div class="card hidden" id="reacStep3">
       <h2>Resumen de reactivos</h2>
       <div id="reacResumen" class="summary"></div>
-      <label for="reacNombreUsuario">Nombre</label>
-      <input type="text" id="reacNombreUsuario" placeholder="Nombre completo" required>
-      <label for="reacCorreoUsuario">Correo institucional</label>
-      <input type="email" id="reacCorreoUsuario" placeholder="usuario@ikiam.edu.ec" required>
-      <label for="reacFecha">Fecha</label>
-      <input type="text" id="reacFecha" placeholder="dd/mm/aaaa" readonly>
-      <label for="reacTipoAct">Tipo de actividad</label>
-      <select id="reacTipoAct">
+      <div class="field">
+        <label for="reacNombreUsuario">Nombre</label>
+        <input type="text" id="reacNombreUsuario" placeholder="Nombre completo" required>
+      </div>
+      <div class="field">
+        <label for="reacCorreoUsuario">Correo institucional</label>
+        <input type="email" id="reacCorreoUsuario" placeholder="usuario@ikiam.edu.ec" required>
+      </div>
+      <div class="field">
+        <label for="reacFecha">Fecha</label>
+        <input type="text" id="reacFecha" placeholder="dd/mm/aaaa" readonly>
+      </div>
+      <div class="field">
+        <label for="reacTipoAct">Tipo de actividad</label>
+        <select id="reacTipoAct">
         <option value="">– selecciona –</option>
         <option value="Práctica">Práctica</option>
         <option value="Proyecto">Proyecto</option>
         <option value="Tesis">Tesis</option>
-      </select>
-      <label for="reacNombreAct">Nombre de la actividad</label>
-      <input type="text" id="reacNombreAct" placeholder="Nombre de la actividad">
+        </select>
+      </div>
+      <div class="field">
+        <label for="reacNombreAct">Nombre de la actividad</label>
+        <input type="text" id="reacNombreAct" placeholder="Nombre de la actividad">
+      </div>
       <div class="actions">
-        <button id="reacBackToSearch">← Volver</button>
-        <button id="reacEnviarBtn">Enviar</button>
+        <button id="reacBackToSearch" class="btn btn-secondary" type="button">Volver</button>
+        <button id="reacEnviarBtn" class="btn btn-primary" type="button">Enviar</button>
       </div>
     </div>
+    </div>
   </main>
-  <footer>
+  <footer class="app-footer">
     <p><strong>Contacto:</strong> thomas.garzon@ikiam.edu.ec</p>
     <p><strong>Teléfono:</strong> 0959546317</p>
     <p><strong>Ubicación:</strong> Laboratorio Química 1 de Docencia – Tena, Ecuador</p>
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script type="module" src="reactivos.js"></script>
+  <!-- Importamos el módulo desde la carpeta js -->
+  <script type="module" src="js/reactivos.js"></script>
 </body>
 </html>
